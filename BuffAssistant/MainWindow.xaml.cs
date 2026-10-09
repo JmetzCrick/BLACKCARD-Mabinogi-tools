@@ -651,7 +651,11 @@ public partial class MainWindow : Window
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
     private void UpdateErinClock()
     {
-        var minute = ErinClock.Minute(DateTimeOffset.UtcNow);
+        var now = DateTimeOffset.UtcNow;
+        var minute = ErinClock.Minute(now);
+        var weekday = ErinWeekday.At(now);
+        ErinWeekdayText.Text = weekday.Label;
+        ErinWeekdayText.ToolTip = weekday.Description;
         ErinPeriodText.Text = minute < 720 ? "AM" : "PM";
         var hour = minute / 60 % 12;
         ErinDigitalText.Text = $"{(hour == 0 ? 12 : hour):00} : {minute % 60:00}";

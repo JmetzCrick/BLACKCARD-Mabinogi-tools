@@ -73,6 +73,8 @@ internal static class Program
                 return 0;
             }
             AudioVolumeTests.Run(Check);
+            Check(ErinWeekday.At(new DateTimeOffset(2026,10,11,14,59,59,TimeSpan.Zero)).Label == "임볼릭 · 일", "Weekday uses KST before midnight");
+            Check(ErinWeekday.At(new DateTimeOffset(2026,10,11,15,0,0,TimeSpan.Zero)).Label == "알반 에일레르 · 월", "Weekday switches at KST midnight independently of PC timezone");
             CalculatorTests.Run(Check);
             GatheringTests.Run(Check);
             var bundleFolder = Path.Combine(AppContext.BaseDirectory,"Assets","Music");
