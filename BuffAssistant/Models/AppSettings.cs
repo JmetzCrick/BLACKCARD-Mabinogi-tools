@@ -29,7 +29,5 @@ public sealed class SavedBuffRule
 {
     public string Name { get; set; } = "";
     public string AudioFile { get; set; } = "";
-    public double RedPixelRatioThreshold { get; set; } = 0.12;
-    public int RequiredConsecutiveDetections { get; set; } = 2;
 }
 

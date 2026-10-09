@@ -96,6 +96,9 @@ internal static class Program
             app.InitializeComponent();
             var main = new MainWindow(autoPlayMusic: false, auctionDataSource: new FakeAuctionSource(), auctionHistoryPath: Path.Combine(AppContext.BaseDirectory, "ui-history.json"));
             Check(typeof(MainWindow).GetField("_ocr", BindingFlags.NonPublic | BindingFlags.Instance) == null && typeof(MainWindow).Assembly.GetType("BuffAssistant.Services.OcrService") == null, "Public build contains no active OCR service or engine initialization");
+            foreach (var removed in new[] { "Services.BuffMonitorService", "Services.ScreenCaptureService", "Services.ColorDetectionService", "Services.TextContrast", "RegionPickerWindow", "Models.ScreenRect" })
+                Check(typeof(MainWindow).Assembly.GetType("BuffAssistant." + removed) == null, "Removed implementation: " + removed);
+            Check(typeof(BuffAssistant.Models.BuffRule).GetMethod("TryTrigger") == null && typeof(BuffAssistant.Models.BuffRule).GetMethod("ResetAlert") == null, "Buff rows contain presentation data only");
             var tab = (Button)main.FindName("BuffTabButton");
             Check(Grid.GetRow(tab) == 1 && Grid.GetColumn(tab) == 1, "Music buff tab is left of the rightmost settings tab");
             Check(((TextBlock)main.FindName("BuffWarningIcon")).Text == "❗", "Music buff tab has small warning emoji");

@@ -10,10 +10,10 @@
     <AssemblyName>블랙카드 도우미</AssemblyName>
     <Product>블랙카드 도우미</Product>
     <AssemblyTitle>블랙카드 도우미</AssemblyTitle>
-    <Version>0.1.7-beta.1</Version>
-    <AssemblyVersion>0.1.7.0</AssemblyVersion>
-    <FileVersion>0.1.7.0</FileVersion>
-    <InformationalVersion>BETA 0.1.7</InformationalVersion>
+    <Version>0.1.8-beta.1</Version>
+    <AssemblyVersion>0.1.8.0</AssemblyVersion>
+    <FileVersion>0.1.8.0</FileVersion>
+    <InformationalVersion>BETA 0.1.8</InformationalVersion>
   </PropertyGroup>
   <ItemGroup>
     <Using Remove="System.Windows.Forms" />
@@ -22,8 +22,6 @@
     <Content Include="github-update.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="auction-key.bin" CopyToOutputDirectory="PreserveNewest" Condition="'$(PublicRelease)' != 'true' and Exists('auction-key.bin')" />
     <Content Include="Assets\auction-names.json" CopyToOutputDirectory="PreserveNewest" />
-    <!-- 怨듦컻 諛고룷?먯꽌??OCR???ъ슜?섏? ?딆뒿?덈떎. 湲곗〈 ?섏〈?깆? 二쇱꽍?쇰줈 蹂댁〈?⑸땲??
-    <PackageReference Include="Tesseract" Version="5.2.0" /> -->
     <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
     <PackageReference Include="NAudio" Version="2.2.1" />
   </ItemGroup>
@@ -36,10 +34,9 @@
     <Resource Include="Assets\Images\LoadingCharacter.png" />
     <Resource Include="Assets\Images\AppIcon.ico" />
     <Resource Include="Assets\Fonts\Mabinogi_Classic_TTF.ttf" />
-    <!-- OCR ?곗씠?곕뒗 諛고룷 ??곸뿉???쒖쇅?⑸땲??
-    <Content Include="tessdata\\**\\*"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content> -->
   </ItemGroup>
 </Project>
+
 
 
 
