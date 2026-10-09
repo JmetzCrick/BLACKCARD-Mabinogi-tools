@@ -19,7 +19,7 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Build regression tests
         run: dotnet build SmokeTests/SmokeTests.csproj -c Release -o TestOutput
-      - name: Test detection, calculators, auction and GitHub updates
+      - name: Test disabled buff page, calculators, auction and GitHub updates
         run: dotnet TestOutput/SmokeTests.dll --ci
       - name: Test update install and rollback
         run: dotnet TestOutput/SmokeTests.dll --updater-fixture

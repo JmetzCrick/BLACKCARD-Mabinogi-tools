@@ -1,10 +1,10 @@
 # 블랙카드 도우미
 
-마비노기 음악 버프 30초 알림, 경매장 조회, 패스트핑 및 분배 계산기입니다.
+마비노기 경매장 조회, 패스트핑 및 분배 계산기입니다. 음악버프 기능은 비활성화되었으며 기존 OCR 코드는 주석으로 보존되어 있습니다.
 
 ## 실행
 
-GitHub Releases의 `BlackCardHelper-…-win-x64.zip`을 전체 압축 해제한 뒤 `블랙카드 도우미.exe`를 실행하세요. .NET, OCR, 음악 및 암호화된 공통 경매장 API 키가 포함됩니다.
+GitHub Releases의 `BlackCardHelper-…-win-x64.zip`을 전체 압축 해제한 뒤 `블랙카드 도우미.exe`를 실행하세요. .NET, 음악 및 암호화된 공통 경매장 API 키가 포함됩니다.
 
 프로그램 시작 시 새 버전을 자동 확인합니다. 업데이트 탭에서 최신버전을 확인하고 안내에 동의하면 다운로드·SHA256 검증·교체·재실행을 진행합니다. 일반 사용자에게 GitHub 로그인은 필요 없습니다.
 
@@ -28,3 +28,4 @@ GitHub Releases의 `BlackCardHelper-…-win-x64.zip`을 전체 압축 해제한 
 전체 데스크톱/음악 테스트는 소리 장치가 있는 Windows PC에서 `dotnet TestOutput/SmokeTests.dll`로 실행합니다.
 
 `Scripts/Publish-Release.ps1`은 로컬 배포 ZIP과 SHA256 파일을 만듭니다.
+

@@ -17,12 +17,12 @@ public partial class MainWindow : Window
 {
     private readonly ObservableCollection<BuffRule> _rules = new();
     private readonly ObservableCollection<MusicFileItem> _musicFiles = new();
-    private readonly ScreenCaptureService _capture = new();
-    private readonly OcrService _ocr = new();
-    private readonly ColorDetectionService _color = new();
+    // 공개 배포 비활성화: private readonly ScreenCaptureService _capture = new();
+    // 공개 배포 비활성화: private readonly OcrService _ocr = new();
+    // 공개 배포 비활성화: private readonly ColorDetectionService _color = new();
     private readonly AudioAlertService _audio = new();
     private readonly BackgroundMusicService _backgroundMusic = new();
-    private readonly BuffMonitorService _monitor;
+    // 공개 배포 비활성화: private readonly BuffMonitorService _monitor;
     private readonly AppSettingsService _settings = new();
     private readonly AuctionService _auction = new();
     private readonly IAuctionDataSource _auctionSearchSource;
@@ -40,8 +40,8 @@ public partial class MainWindow : Window
     private readonly ItemNameCatalog _itemNames = new();
     private bool _choosingItemName;
     private bool _catalogStarted;
-    private CancellationTokenSource? _cts;
-    private ScreenRect? _region;
+    // 공개 배포 비활성화: private CancellationTokenSource? _cts;
+    // 공개 배포 비활성화: private ScreenRect? _region;
     private static readonly string DefaultAlertAudio = Path.Combine(
         AppContext.BaseDirectory, "Assets", "Alerts", "음악버프30초.mp3");
     private string? _selectedAudio;
@@ -77,7 +77,7 @@ public partial class MainWindow : Window
         BuffNameBox.ItemsSource = DefaultBuffs;
         BuffNameBox.SelectedIndex = 0;
         AudioPathBox.Text = DefaultAlertAudio;
-        _monitor = new BuffMonitorService(_capture, _ocr, _color, OnMonitorEvent);
+        // 공개 배포 비활성화: _monitor = new BuffMonitorService(_capture, _ocr, _color, OnMonitorEvent);
 
         foreach (var name in DefaultBuffs)
         {
@@ -91,6 +91,7 @@ public partial class MainWindow : Window
         }
 
         LoadSettings(autoPlayMusic);
+        SelectFeatureTab(true);
         if (autoPlayMusic) Loaded += async (_, _) => await CheckStartupUpdateAsync();
         UpdateMusicButtons();
         _musicUiTimer.Tick += (_, _) => UpdateMusicButtons();
@@ -105,11 +106,11 @@ public partial class MainWindow : Window
             _auction.Dispose();
             _updates.Dispose();
             _audio.PlaybackFinished -= AlertPlaybackFinished;
-            _cts?.Cancel();
+            // 공개 배포 비활성화: _cts?.Cancel();
             _musicUiTimer.Stop();
             _backgroundMusic.Dispose();
             _audio.Dispose();
-            _ocr.Dispose();
+            // 공개 배포 비활성화: _ocr.Dispose();
         };
     }
 
@@ -180,21 +181,23 @@ public partial class MainWindow : Window
         });
     }
 
-    private async void SelectRegion_Click(object sender, RoutedEventArgs e)
-    {
-        Hide();
-        await Task.Delay(250);
-        var picker = new RegionPickerWindow();
-        if (picker.ShowDialog() == true && picker.SelectedRect is not null)
-        {
-            _region = picker.SelectedRect;
-            RegionText.Text = $"감지 영역: X={_region.X}, Y={_region.Y}, W={_region.Width}, H={_region.Height}";
-            AddLog("감지 영역이 설정되었습니다.");
-        }
-        Show();
-        Activate();
-    }
-
+    private void SelectRegion_Click(object sender, RoutedEventArgs e) => StatusText.Text = "넥슨정책상 해당 기능이 지원되지 않습니다.";
+//     private async void SelectRegion_Click(object sender, RoutedEventArgs e)
+//     {
+//         Hide();
+//         await Task.Delay(250);
+//         var picker = new RegionPickerWindow();
+//         if (picker.ShowDialog() == true && picker.SelectedRect is not null)
+//         {
+//             _region = picker.SelectedRect;
+//             RegionText.Text = $"감지 영역: X={_region.X}, Y={_region.Y}, W={_region.Width}, H={_region.Height}";
+//             AddLog("감지 영역이 설정되었습니다.");
+//         }
+//         Show();
+//         Activate();
+//     }
+// 
+// 
     private void ChooseAudio_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog
@@ -242,43 +245,45 @@ public partial class MainWindow : Window
 
     private void RefreshRules() => RulesGrid.Items.Refresh();
 
-    private async void Start_Click(object sender, RoutedEventArgs e)
-    {
-        if (_region is null)
-        {
-            MessageBox.Show("먼저 감지 영역을 선택하세요.");
-            return;
-        }
-        if (!_rules.Any())
-        {
-            MessageBox.Show("버프 규칙을 하나 이상 추가하세요.");
-            return;
-        }
-
-        _cts = new CancellationTokenSource();
-        StartButton.IsEnabled = false;
-        StopButton.IsEnabled = true;
-        StatusText.Text = "감지 중";
-        AddLog("감지를 시작했습니다.");
-
-        try { await _monitor.RunAsync(_region, _rules.ToList(), _cts.Token); }
-        catch (OperationCanceledException) { }
-        catch (Exception ex)
-        {
-            AddLog("오류: " + ex.Message);
-            MessageBox.Show(ex.Message, "감지 오류");
-        }
-        finally
-        {
-            StartButton.IsEnabled = true;
-            StopButton.IsEnabled = false;
-            StatusText.Text = "중지됨";
-        }
-    }
-
+    private void Start_Click(object sender, RoutedEventArgs e) => StatusText.Text = "넥슨정책상 해당 기능이 지원되지 않습니다.";
+//     private async void Start_Click(object sender, RoutedEventArgs e)
+//     {
+//         if (_region is null)
+//         {
+//             MessageBox.Show("먼저 감지 영역을 선택하세요.");
+//             return;
+//         }
+//         if (!_rules.Any())
+//         {
+//             MessageBox.Show("버프 규칙을 하나 이상 추가하세요.");
+//             return;
+//         }
+// 
+//         _cts = new CancellationTokenSource();
+//         StartButton.IsEnabled = false;
+//         StopButton.IsEnabled = true;
+//         StatusText.Text = "감지 중";
+//         AddLog("감지를 시작했습니다.");
+// 
+//         try { await _monitor.RunAsync(_region, _rules.ToList(), _cts.Token); }
+//         catch (OperationCanceledException) { }
+//         catch (Exception ex)
+//         {
+//             AddLog("오류: " + ex.Message);
+//             MessageBox.Show(ex.Message, "감지 오류");
+//         }
+//         finally
+//         {
+//             StartButton.IsEnabled = true;
+//             StopButton.IsEnabled = false;
+//             StatusText.Text = "중지됨";
+//         }
+//     }
+// 
+// 
     private void Stop_Click(object sender, RoutedEventArgs e)
     {
-        _cts?.Cancel();
+        // 공개 배포 비활성화: _cts?.Cancel();
         AddLog("감지 중지를 요청했습니다.");
     }
 
@@ -736,29 +741,30 @@ public partial class MainWindow : Window
         catch (Exception ex) { MessageBox.Show(this, ex.Message, "음악 재생 오류"); }
         UpdateMusicButtons();
     }
-    private void OnMonitorEvent(MonitorEvent ev)
-    {
-        Dispatcher.Invoke(() =>
-        {
-            AddLog(ev.Message);
-            StatusText.Text = ev.AudioFile is null ? ev.Message : "30초 알림";
-            if (ev.AudioFile is not null && File.Exists(ev.AudioFile))
-            {
-                try
-                {
-                    _backgroundMusic.SetAlertActive(true);
-                    _audio.Play(ev.AudioFile, (float)(AlertVolumeSlider.Value / 100));
-                    if (!_audio.IsPlaying) _backgroundMusic.SetAlertActive(false);
-                }
-                catch (Exception ex)
-                {
-                    _backgroundMusic.SetAlertActive(false);
-                    AddLog("알림 음성 오류: " + ex.Message);
-                }
-            }
-        });
-    }
-
+//     private void OnMonitorEvent(MonitorEvent ev)
+//     {
+//         Dispatcher.Invoke(() =>
+//         {
+//             AddLog(ev.Message);
+//             StatusText.Text = ev.AudioFile is null ? ev.Message : "30초 알림";
+//             if (ev.AudioFile is not null && File.Exists(ev.AudioFile))
+//             {
+//                 try
+//                 {
+//                     _backgroundMusic.SetAlertActive(true);
+//                     _audio.Play(ev.AudioFile, (float)(AlertVolumeSlider.Value / 100));
+//                     if (!_audio.IsPlaying) _backgroundMusic.SetAlertActive(false);
+//                 }
+//                 catch (Exception ex)
+//                 {
+//                     _backgroundMusic.SetAlertActive(false);
+//                     AddLog("알림 음성 오류: " + ex.Message);
+//                 }
+//             }
+//         });
+//     }
+// 
+// 
     private void AlertPlaybackFinished(object? sender, EventArgs e)
     {
         Dispatcher.BeginInvoke(new Action(() =>
@@ -782,6 +788,8 @@ public sealed class MusicFileItem
         ? "여름 들장미의 향기 · 에탄 BGM" : System.IO.Path.GetFileName(Path);
     public MusicFileItem(string path) => Path = path;
 }
+
+
 
 
 
