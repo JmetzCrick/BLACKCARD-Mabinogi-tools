@@ -11,7 +11,7 @@ internal static class UpdateFeatureTests
         var current = typeof(UpdateService).Assembly.GetName().Version!;
         var next = $"{current.Major}.{current.Minor}.{current.Build + 1}";
         var stable = $"{current.Major}.{current.Minor}.{current.Build}";
-        check(!UpdateService.IsNewer(UpdateService.DisplayVersion) && UpdateService.IsNewer("BETA " + next) && UpdateService.IsNewer(stable), "Beta version comparison distinguishes newer beta and stable release");
+        check(!UpdateService.IsNewer(UpdateService.DisplayVersion) && UpdateService.IsNewer("BETA " + next) && UpdateService.IsNewer(stable) == UpdateService.DisplayVersion.StartsWith("BETA"), "Beta version comparison distinguishes newer beta and stable release");
         check(!UpdateService.IsNewer("BETA 0.0") && UpdateService.IsNewer("v" + next + "-beta.1"), "Version comparison rejects downgrade and accepts newer patch");
         var githubJson = JsonSerializer.Serialize(new[] {
             new { tag_name = "v" + next + "-beta.1", draft = false, prerelease = true, body = "GitHub 업데이트", assets = new[] { new { name = "BlackCardHelper-" + next + "-win-x64.zip", browser_download_url = "https://github.com/test/repo/releases/download/v" + next + "/package.zip", digest = "sha256:" + new string('a', 64) } } },

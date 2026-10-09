@@ -42,8 +42,8 @@ jobs:
           $tag = 'v' + $version
           gh release view $tag *> $null
           if ($LASTEXITCODE -eq 0) { Write-Output 'This version is already published. Increase the project version for the next update.'; exit 0 }
-          $args = @('release', 'create', $tag, '--target', '${{ github.sha }}', '--title', ('BlackCardHelper ' + $version), '--notes', 'Windows x64 standalone package. Extract all files and run 블랙카드 도우미.exe. Includes encrypted shared auction API key.')
-          if ($version -match 'beta') { $args += '--prerelease' }
-          $args += @(Get-ChildItem ReleaseArtifacts/* -File | ForEach-Object FullName)
-          & gh @args
+          $taskReleaseArguments = @('release', 'create', $tag, '--target', '${{ github.sha }}', '--title', ('BlackCardHelper ' + $version), '--notes', 'Windows x64 standalone package. Extract all files and run 블랙카드 도우미.exe. Includes encrypted shared auction API key.')
+          if ($version -match 'beta') { $taskReleaseArguments += '--prerelease' }
+          $taskReleaseArguments += @(Get-ChildItem ReleaseArtifacts/* -File | ForEach-Object FullName)
+          & gh @taskReleaseArguments
           if ($LASTEXITCODE -ne 0) { throw 'GitHub Release publishing failed' }
