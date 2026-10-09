@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.IO;
 using System.Reflection;
 using System.Threading;
@@ -21,6 +22,15 @@ internal static class Program
     {
         try
         {
+            if(args.Length > 0 && args[0] == "--music-files-test")
+            {
+                foreach(var file in MusicCatalog.StartupPlaylist(Array.Empty<string>(),Path.Combine(AppContext.BaseDirectory,"Assets","Music")))
+                {
+                    using var reader = new NAudio.Wave.AudioFileReader(file);
+                    Check(reader.TotalTime > TimeSpan.FromSeconds(10), "Bundled track decodes: " + MusicCatalog.DisplayName(file));
+                }
+                return 0;
+            }
             if(args.Length > 0 && args[0] == "--tray-test")
             {
                 var trayApp=new App(); trayApp.InitializeComponent();
@@ -64,6 +74,17 @@ internal static class Program
             }
             CalculatorTests.Run(Check);
             GatheringTests.Run(Check);
+            var bundleFolder = Path.Combine(AppContext.BaseDirectory,"Assets","Music");
+            var playlist = MusicCatalog.StartupPlaylist(Array.Empty<string>(),bundleFolder);
+            Check(playlist.Count == 6 && playlist.Any(p=>Path.GetFileName(p)=="Pola.mp3"), "Six supplied music tracks including Pola are bundled");
+            var firstTracks = new System.Collections.Generic.HashSet<string>();
+            for(var attempt=0;attempt<30;attempt++)
+            {
+                playlist=MusicCatalog.StartupPlaylist(playlist,bundleFolder);
+                Check(playlist.Count==6,"Restart does not duplicate bundled playlist");
+                firstTracks.Add(playlist[0]);
+            }
+            Check(firstTracks.Count > 1,"Startup song is randomized among the supplied bundled tracks");
             AuctionFeatureTests.Run(Check);
             AuctionRequestTests.Run(Check);
             UpdateFeatureTests.Run(Check);

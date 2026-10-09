@@ -145,8 +145,8 @@ public partial class MainWindow : Window
             Topmost = settings.AlwaysOnTop;
             try { StartupCheck.IsChecked = StartupService.IsEnabled(); } catch { SettingsStatusText.Text = "자동 실행 설정을 읽을 수 없습니다."; }
             _gathering.Load(settings.GatheringAlarmsEnabled, settings.GatheringAlarmItems ?? new(), settings.GatheringVolumePercent);
-            var bundled = Path.Combine(AppContext.BaseDirectory, "Assets", "Music", "Etain.mp3");
-            foreach (var path in MusicCatalog.Normalize(settings.MusicFiles, bundled))
+            var bundled = Path.Combine(AppContext.BaseDirectory, "Assets", "Music");
+            foreach (var path in MusicCatalog.StartupPlaylist(settings.MusicFiles, bundled))
                 _musicFiles.Add(new MusicFileItem(path));
 
             foreach (var saved in settings.BuffRules)
@@ -160,7 +160,7 @@ public partial class MainWindow : Window
                 }
             }
 
-            MusicList.SelectedItem = _musicFiles.FirstOrDefault(m => m.Path.Equals(settings.SelectedMusicFile, StringComparison.OrdinalIgnoreCase)) ?? _musicFiles.FirstOrDefault();
+            MusicList.SelectedItem = _musicFiles.FirstOrDefault();
             _backgroundMusic.Repeat = settings.MusicRepeat;
             _musicMuted = settings.MusicMuted;
             _musicEnabled = settings.ShouldPlayMusic;
@@ -860,8 +860,7 @@ public partial class MainWindow : Window
 public sealed class MusicFileItem
 {
     public string Path { get; }
-    public string DisplayName => System.IO.Path.GetFileName(Path).Equals("Etain.mp3", StringComparison.OrdinalIgnoreCase)
-        ? "여름 들장미의 향기 · 에탄 BGM" : System.IO.Path.GetFileName(Path);
+    public string DisplayName => MusicCatalog.DisplayName(Path);
     public MusicFileItem(string path) => Path = path;
 }
 
