@@ -24,6 +24,8 @@ public partial class MainWindow : Window
     private readonly BackgroundMusicService _backgroundMusic = new();
     // 공개 배포 비활성화: private readonly BuffMonitorService _monitor;
     private readonly AppSettingsService _settings = new();
+    private GatheringPanel _gathering = null!;
+    private readonly System.Windows.Threading.DispatcherTimer _gatheringToastTimer = new() { Interval = TimeSpan.FromSeconds(10) };
     private readonly AuctionService _auction = new();
     private readonly IAuctionDataSource _auctionSearchSource;
     private readonly AuctionInsightsService _auctionInsights;
@@ -50,8 +52,8 @@ public partial class MainWindow : Window
     private bool _musicEnabled = true;
     private bool _closed;
     private bool _featuresCollapsed;
-    private double _expandedHeight = 584;
-    private double _expandedMinHeight = 564;
+    private double _expandedHeight = 616;
+    private double _expandedMinHeight = 596;
     private ResizeMode _expandedResizeMode;
     private readonly System.Windows.Threading.DispatcherTimer _musicUiTimer = new() { Interval = TimeSpan.FromMilliseconds(400) };
 
@@ -65,6 +67,11 @@ public partial class MainWindow : Window
         _auctionSearchSource = auctionDataSource ?? _auction;
         _auctionInsights = new AuctionInsightsService(_auctionSearchSource, auctionHistoryPath);
         InitializeComponent();
+        _gathering = new GatheringPanel();
+        GatheringHost.Child = _gathering;
+        _gathering.SettingsChanged += () => { if (!_loadingSettings) SaveSettings(); };
+        _gathering.AlarmRaised += message => { GatheringToastText.Text = message; GatheringToast.Visibility = Visibility.Visible; _gatheringToastTimer.Stop(); _gatheringToastTimer.Start(); };
+        _gatheringToastTimer.Tick += (_, _) => { GatheringToast.Visibility = Visibility.Collapsed; _gatheringToastTimer.Stop(); };
         HeaderVersionText.Text = UpdateService.DisplayVersion;
         CurrentVersionText.Text = "현재 버전  " + UpdateService.DisplayVersion;
         AddHandler(System.Windows.Input.Mouse.PreviewMouseDownEvent, new System.Windows.Input.MouseButtonEventHandler(ShowClickRipple), true);
@@ -100,6 +107,8 @@ public partial class MainWindow : Window
         Closed += (_, _) =>
         {
             _closed = true;
+            _gathering.Dispose();
+            _gatheringToastTimer.Stop();
             ClickEffectsCanvas.Children.Clear();
             _auctionLifetime.Cancel();
             _insightsCts?.Cancel();
@@ -120,6 +129,7 @@ public partial class MainWindow : Window
         try
         {
             var settings = _settings.Load();
+            _gathering.Load(settings.GatheringAlarmsEnabled, settings.GatheringAlarmItems ?? new(), settings.GatheringVolumePercent);
             var bundled = Path.Combine(AppContext.BaseDirectory, "Assets", "Music", "Etain.mp3");
             foreach (var path in MusicCatalog.Normalize(settings.MusicFiles, bundled))
                 _musicFiles.Add(new MusicFileItem(path));
@@ -170,6 +180,9 @@ public partial class MainWindow : Window
             MusicVolumeDefaultsVersion = 1,
             AlertVolumePercent = AlertVolumeSlider.Value,
             WindowTransparencyPercent = WindowTransparencySlider.Value,
+            GatheringAlarmsEnabled = _gathering.AlarmsEnabled,
+            GatheringAlarmItems = _gathering.SelectedItems,
+            GatheringVolumePercent = _gathering.VolumePercent,
             UpdateFeedUrl = _updateFeedPath,
             BuffRules = _rules.Select(r => new SavedBuffRule
             {
@@ -317,6 +330,8 @@ public partial class MainWindow : Window
     }
     private void SelectFeatureTab(bool fastPing)
     {
+        GatheringHost.Visibility = Visibility.Collapsed;
+        GatheringTabButton.Background = (System.Windows.Media.Brush)FindResource("ButtonGradient");
         BeadPanel.Visibility = Visibility.Collapsed;
         FeePanel.Visibility = Visibility.Collapsed;
         BeadTabButton.Background = (System.Windows.Media.Brush)FindResource("ButtonGradient");
@@ -332,6 +347,15 @@ public partial class MainWindow : Window
         FastPingTabButton.Background = fastPing ? active : inactive;
         AuctionTabButton.Background = inactive;
         UpdateTabButton.Background = inactive;
+    }
+    private void GatheringTab_Click(object sender, RoutedEventArgs e)
+    {
+        SelectFeatureTab(false);
+        BuffPanel.Visibility = Visibility.Collapsed;
+        GatheringHost.Visibility = Visibility.Visible;
+        GatheringTabButton.Background = BuffTabButton.Background;
+        BuffTabButton.Background = (System.Windows.Media.Brush)FindResource("ButtonGradient");
+        _gathering.Refresh();
     }
     private void UpdateTab_Click(object sender, RoutedEventArgs e)
     {
@@ -425,21 +449,6 @@ public partial class MainWindow : Window
         AuctionTabButton.Background = BuffTabButton.Background;
         BuffTabButton.Background = (System.Windows.Media.Brush)FindResource("ButtonGradient");
         if (!_catalogStarted) { _catalogStarted = true; _ = RefreshItemNamesAsync(); }
-    }
-    private void AuctionKey_Click(object sender, RoutedEventArgs e)
-    {
-        var dialog = new Window { Owner = this, Title = "넥슨 Open API 키", Width = 370, Height = 225, ResizeMode = ResizeMode.NoResize, WindowStartupLocation = WindowStartupLocation.CenterOwner, Background = (System.Windows.Media.Brush)FindResource("NavyGradient") };
-        var body = new StackPanel { Margin = new Thickness(18) };
-        body.Children.Add(new TextBlock { Text = "마비노기 접근 권한이 있는 API 키를 입력하세요.\n키는 현재 Windows 계정에 암호화하여 저장합니다.", FontSize = 11, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 12) });
-        var input = new PasswordBox { Padding = new Thickness(8), Background = System.Windows.Media.Brushes.White, Margin = new Thickness(0, 0, 0, 10) };
-        body.Children.Add(input);
-        var status = new TextBlock { FontSize = 10, Foreground = System.Windows.Media.Brushes.Salmon, TextWrapping = TextWrapping.Wrap };
-        var save = new Button { Content = "저장", Padding = new Thickness(8), Margin = new Thickness(0, 0, 0, 5) };
-        save.Click += (_, _) => { try { AuctionService.SaveKey(input.Password); input.Clear(); dialog.DialogResult = true; } catch (Exception) { status.Text = "키 형식 또는 저장 권한을 확인하세요."; } };
-        body.Children.Add(save);
-        body.Children.Add(status);
-        dialog.Content = body;
-        if (dialog.ShowDialog() == true) { AuctionStatusText.Text = "API 키를 저장했습니다. 검색할 수 있습니다."; _catalogStarted = true; _ = RefreshItemNamesAsync(); }
     }
     private async Task RefreshItemNamesAsync()
     {
@@ -788,6 +797,7 @@ public sealed class MusicFileItem
         ? "여름 들장미의 향기 · 에탄 BGM" : System.IO.Path.GetFileName(Path);
     public MusicFileItem(string path) => Path = path;
 }
+
 
 
 

@@ -5,6 +5,14 @@ namespace BuffAssistant.Services;
 
 public static class BundledAuctionKey
 {
+    public static string Read()
+    {
+        using var stream = typeof(BundledAuctionKey).Assembly.GetManifestResourceStream("BlackCardHelper.AuctionKey")
+            ?? throw new InvalidOperationException("내장 경매장 설정을 읽을 수 없습니다. 최신 배포본을 다시 설치해 주세요.");
+        using var buffer = new System.IO.MemoryStream();
+        stream.CopyTo(buffer);
+        return Decrypt(buffer.ToArray());
+    }
     public static string Decrypt(byte[] package)
     {
         if (package.Length < 29) throw new CryptographicException("배포 API 키 파일이 손상되었습니다.");

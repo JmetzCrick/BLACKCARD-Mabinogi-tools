@@ -104,30 +104,7 @@ public sealed class AuctionService : IDisposable, IAuctionDataSource
         }
         return body;
     }
-    private static string ReadKey()
-    {
-        var bundledPath = Path.Combine(AppContext.BaseDirectory, "auction-shared.enc");
-        if (File.Exists(bundledPath)) return BundledAuctionKey.Decrypt(File.ReadAllBytes(bundledPath));
-        var personalPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BuffAssistant", "auction-key.bin");
-        var keyPath = File.Exists(personalPath) ? personalPath : Path.Combine(AppContext.BaseDirectory, "auction-key.bin");
-        if (!File.Exists(keyPath)) throw new InvalidOperationException("경매장 오른쪽 위의 API 키 버튼에서 넥슨 Open API 키를 입력하세요.");
-        var bytes = File.ReadAllBytes(keyPath);
-        var input = new Blob { Length = bytes.Length, Data = Marshal.AllocHGlobal(bytes.Length) };
-        try
-        {
-            Marshal.Copy(bytes, 0, input.Data, bytes.Length);
-            if (!CryptUnprotectData(ref input, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, 1, out var output))
-                throw new Win32Exception(Marshal.GetLastWin32Error(), "이 Windows 사용자 계정에서 API 키를 읽을 수 없습니다.");
-            try
-            {
-                var plain = new byte[output.Length];
-                Marshal.Copy(output.Data, plain, 0, plain.Length);
-                return System.Text.Encoding.UTF8.GetString(plain);
-            }
-            finally { LocalFree(output.Data); }
-        }
-        finally { Marshal.FreeHGlobal(input.Data); }
-    }
+    private static string ReadKey() => BundledAuctionKey.Read();
     public static void SaveKey(string key)
     {
         key = key.Trim();
@@ -156,3 +133,4 @@ public sealed class AuctionService : IDisposable, IAuctionDataSource
     [DllImport("kernel32.dll")] private static extern IntPtr LocalFree(IntPtr pointer);
     public void Dispose() => _client.Dispose();
 }
+

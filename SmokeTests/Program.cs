@@ -29,6 +29,7 @@ internal static class Program
                 return 0;
             }
             CalculatorTests.Run(Check);
+            GatheringTests.Run(Check);
             AuctionFeatureTests.Run(Check);
             UpdateFeatureTests.Run(Check);
             if (args.Length == 0) AudioPolicyTests.Run(Check);
@@ -37,7 +38,7 @@ internal static class Program
             var main = new MainWindow(autoPlayMusic: false, auctionDataSource: new FakeAuctionSource(), auctionHistoryPath: Path.Combine(AppContext.BaseDirectory, "ui-history.json"));
             Check(typeof(MainWindow).GetField("_ocr", BindingFlags.NonPublic | BindingFlags.Instance) == null && typeof(MainWindow).Assembly.GetType("BuffAssistant.Services.OcrService") == null, "Public build contains no active OCR service or engine initialization");
             var tab = (Button)main.FindName("BuffTabButton");
-            Check(Grid.GetRow(tab) == 1 && Grid.GetColumn(tab) == 2, "Music buff tab moved to bottom-right");
+            Check(Grid.GetRow(tab) == 1 && Grid.GetColumn(tab) == 3, "Music buff tab moved to bottom-right");
             Check(((TextBlock)main.FindName("BuffWarningIcon")).Text == "❗", "Music buff tab has small warning emoji");
             typeof(MainWindow).GetMethod("BuffTab_Click", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(main, new object[] { main, new RoutedEventArgs() });
             var menu = (Grid)main.FindName("BuffMenu");
@@ -52,6 +53,20 @@ internal static class Program
             var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
             using (var file = File.Create("buff-policy-preview.png")) encoder.Save(file);
             CalculatorTests.RunUi(main, Check);
+            typeof(MainWindow).GetMethod("GatheringTab_Click", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(main, new object[] { main, new RoutedEventArgs() });
+            Check(((Border)main.FindName("GatheringHost")).Visibility == Visibility.Visible && ((Grid)main.FindName("BuffPanel")).Visibility == Visibility.Collapsed, "Gathering tab opens while music buff stays unavailable");
+            var transparency = (Slider)main.FindName("WindowTransparencySlider");
+            Check(transparency.IsEnabled && !menu.IsAncestorOf(transparency), "Transparency slider is enabled in the common footer outside the disabled buff menu");
+            typeof(MainWindow).GetField("_loadingSettings", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(main, true);
+            transparency.Value = 25;
+            typeof(MainWindow).GetMethod("ApplyWindowTransparency", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(main, null);
+            Check(((Grid)main.FindName("FeaturePanel")).Opacity == 0.75 && ((Border)main.FindName("TitleBar")).Opacity == 1, "Transparency changes functional content while keeping the title bar opaque");
+            transparency.Value = 0;
+            typeof(MainWindow).GetMethod("ApplyWindowTransparency", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(main, null);
+            root.Measure(new Size(440,616)); root.Arrange(new Rect(0,0,440,616)); root.UpdateLayout();
+            var gatheringBitmap = new RenderTargetBitmap(440,616,96,96,PixelFormats.Pbgra32); gatheringBitmap.Render(root);
+            var gatheringEncoder = new PngBitmapEncoder(); gatheringEncoder.Frames.Add(BitmapFrame.Create(gatheringBitmap));
+            using (var file = File.Create("gathering-preview.png")) gatheringEncoder.Save(file);
             Check(((TextBlock)main.FindName("HeaderVersionText")).Text == UpdateService.DisplayVersion, "Header version follows release metadata");
             main.Close();
             return 0;

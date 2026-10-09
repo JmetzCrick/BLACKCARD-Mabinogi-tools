@@ -12,6 +12,9 @@ public sealed class AppSettings
     public double StartupMusicVolumePercent => MusicVolumeDefaultsVersion >= 1 ? System.Math.Clamp(MusicVolumePercent, 0, 100) : System.Math.Min(System.Math.Clamp(MusicVolumePercent, 0, 100), 10);
     public double AlertVolumePercent { get; set; } = 100;
     public double WindowTransparencyPercent { get; set; }
+    public bool GatheringAlarmsEnabled { get; set; }
+    public List<string> GatheringAlarmItems { get; set; } = new();
+    public double GatheringVolumePercent { get; set; } = 50;
     public string UpdateFeedUrl { get; set; } = "";
     public bool MusicRepeat { get; set; } = true;
     public bool MusicMuted { get; set; }

@@ -8,7 +8,7 @@ $taskPublish = Join-Path $taskRoot ('Publish/GitHub-' + $taskVersion)
 dotnet publish BuffAssistant/BuffAssistant.csproj -c Release -r win-x64 --self-contained true -p:PublicRelease=true -o $taskPublish
 if ($LASTEXITCODE -ne 0) { throw 'Publish failed' }
 if (Test-Path -LiteralPath (Join-Path $taskPublish 'auction-key.bin')) { throw 'Account-bound private key must not be included' }
-foreach ($taskFile in @('auction-shared.enc', 'github-update.json', 'coreclr.dll')) {
+foreach ($taskFile in @('github-update.json', 'coreclr.dll')) {
     if (!(Test-Path -LiteralPath (Join-Path $taskPublish $taskFile))) { throw ('Missing distribution file: ' + $taskFile) }
 }
 Copy-Item -Path DistributionDocs/* -Destination $taskPublish -Force

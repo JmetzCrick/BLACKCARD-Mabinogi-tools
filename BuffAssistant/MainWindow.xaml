@@ -1,4 +1,4 @@
-<Window x:Class="BuffAssistant.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework" Style="{StaticResource {x:Type Window}}" Icon="/블랙카드 도우미;component/Assets/Images/AppIcon.ico" Title="블랙카드 도우미" Width="440" Height="584" MinWidth="420" MinHeight="564" WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="CanResize" WindowStartupLocation="CenterScreen">
+<Window x:Class="BuffAssistant.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework" Style="{StaticResource {x:Type Window}}" Icon="/블랙카드 도우미;component/Assets/Images/AppIcon.ico" Title="블랙카드 도우미" Width="440" Height="616" MinWidth="420" MinHeight="596" WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="CanResize" WindowStartupLocation="CenterScreen">
  <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="42" ResizeBorderThickness="5" CornerRadius="16" GlassFrameThickness="0"/></shell:WindowChrome.WindowChrome>
  <Window.Resources><Style x:Key="Icon" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Setter Property="Padding" Value="0"/><Setter Property="Width" Value="28"/><Setter Property="Height" Value="28"/><Setter Property="Background" Value="Transparent"/><Setter Property="FontFamily" Value="Segoe MDL2 Assets"/><Setter Property="shell:WindowChrome.IsHitTestVisibleInChrome" Value="True"/></Style></Window.Resources>
  <Border BorderBrush="{StaticResource OutlineGradient}" BorderThickness="0" CornerRadius="16"><Grid>
@@ -16,14 +16,15 @@
    </StackPanel>
   </Grid></Border>
   <Grid x:Name="FeaturePanel" Grid.Row="1" Margin="0,10,0,0">
-   <Grid.RowDefinitions><RowDefinition Height="72"/><RowDefinition Height="*"/><RowDefinition Height="42"/></Grid.RowDefinitions>
-   <Grid Margin="0,0,0,6"><Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="*"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-    <Button x:Name="FastPingTabButton" Content="패스트핑" Click="FastPingTab_Click" Padding="8,5" Margin="0,0,4,0"/>
-    <Button x:Name="AuctionTabButton" Grid.Column="1" Content="경매장" Click="AuctionTab_Click" Padding="8,5" Margin="4,0,0,0"/>
-    <Button x:Name="BeadTabButton" Grid.Column="2" Content="구구 계산기" Click="BeadTab_Click" Padding="8,5" Margin="4,0,0,0"/>
-    <Button x:Name="FeeTabButton" Grid.Row="1" Content="수수료 계산기" Click="FeeTab_Click" Padding="8,5" Margin="0,4,4,0"/>
-    <Button x:Name="UpdateTabButton" Grid.Row="1" Grid.Column="1" Content="업데이트" Click="UpdateTab_Click" Padding="8,5" Margin="4,4,0,0"/>
-    <Button x:Name="BuffTabButton" Grid.Row="1" Grid.Column="2" Click="BuffTab_Click" Padding="8,5" Margin="4,4,0,0" ToolTip="넥슨정책상 해당 기능이 지원되지 않습니다."><Grid Width="115" Height="20"><TextBlock Text="음악버프" HorizontalAlignment="Center" VerticalAlignment="Center"/><TextBlock x:Name="BuffWarningIcon" Text="❗" FontFamily="Segoe UI Emoji" FontSize="9" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-3,0,0"/></Grid></Button>
+   <Grid.RowDefinitions><RowDefinition Height="72"/><RowDefinition Height="*"/><RowDefinition Height="74"/></Grid.RowDefinitions>
+   <Grid Margin="0,0,0,6"><Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="*"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <Button x:Name="FastPingTabButton" Content="패스트핑" Click="FastPingTab_Click" FontSize="11" Padding="6,5" Margin="0,0,4,0"/>
+    <Button x:Name="AuctionTabButton" Grid.Column="1" Content="경매장" Click="AuctionTab_Click" FontSize="11" Padding="6,5" Margin="4,0,0,0"/>
+    <Button x:Name="BeadTabButton" Grid.Column="2" Content="구구" Click="BeadTab_Click" FontSize="11" Padding="6,5" Margin="4,0,0,0"/>
+    <Button x:Name="FeeTabButton" Grid.Column="3" Content="수수료" Click="FeeTab_Click" FontSize="11" Padding="6,5" Margin="4,0,0,0"/>
+    <Button x:Name="GatheringTabButton" Grid.Row="1" Content="채집 시간" Click="GatheringTab_Click" FontSize="11" Padding="6,5" Margin="0,4,4,0"/>
+    <Button x:Name="UpdateTabButton" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="업데이트" Click="UpdateTab_Click" FontSize="11" Padding="6,5" Margin="4,4,0,0"/>
+    <Button x:Name="BuffTabButton" Grid.Row="1" Grid.Column="3" Click="BuffTab_Click" FontSize="11" Padding="6,5" Margin="4,4,0,0" ToolTip="넥슨정책상 해당 기능이 지원되지 않습니다."><Grid Width="76" Height="20"><TextBlock Text="음악버프" HorizontalAlignment="Center" VerticalAlignment="Center"/><TextBlock x:Name="BuffWarningIcon" Text="❗" FontFamily="Segoe UI Emoji" FontSize="9" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-3,0,0"/></Grid></Button>
    </Grid>
    <Border x:Name="FastPingPanel" Grid.Row="1" Style="{StaticResource Card}" Padding="16" Visibility="Collapsed">
     <StackPanel><TextBlock Text="패스트핑" FontSize="17" Margin="0,0,0,14"/><TextBlock Text="TCP/IP 레지스트리 및 MSMQ 설정" Foreground="{StaticResource Muted}" Margin="0,0,0,16"/>
@@ -37,7 +38,7 @@
    <Border x:Name="AuctionPanel" Grid.Row="1" Style="{StaticResource Card}" Padding="12" Visibility="Collapsed"><Grid>
     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="160"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
     <Grid Margin="0,0,0,8"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ComboBox x:Name="AuctionModeBox" Style="{StaticResource AuctionSearchMode}" SelectedIndex="0" Padding="10,7" Margin="0,0,6,0"><ComboBoxItem Content="매물 이름 검색"/><ComboBoxItem Content="키워드 검색"/></ComboBox><Button Grid.Column="1" x:Name="AuctionSearchButton" Content="검색" Click="AuctionSearch_Click" Padding="8,5"/></Grid>
-    <Grid Grid.Row="1" Margin="0,0,0,8"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBox x:Name="AuctionQueryBox" Padding="6,5" ToolTip="한 글자부터 아이템 이름 추천 · 키워드는 공백 또는 쉼표로 구분" KeyDown="AuctionQuery_KeyDown" TextChanged="AuctionQuery_TextChanged"/><Button Grid.Column="1" Content="API 키" FontSize="10" Padding="8,5" Margin="6,0,0,0" Click="AuctionKey_Click"/></Grid>
+    <Grid Grid.Row="1" Margin="0,0,0,8"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBox x:Name="AuctionQueryBox" Padding="6,5" ToolTip="한 글자부터 아이템 이름 추천 · 키워드는 공백 또는 쉼표로 구분" KeyDown="AuctionQuery_KeyDown" TextChanged="AuctionQuery_TextChanged"/></Grid>
     <Popup x:Name="AuctionSuggestionsPopup" Grid.Row="1" PlacementTarget="{Binding ElementName=AuctionQueryBox}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
      <Border Background="{StaticResource NavyGradient}" CornerRadius="12" Padding="6" Width="{Binding ActualWidth, ElementName=AuctionQueryBox}" Opacity="{Binding Opacity, ElementName=FeaturePanel}"><StackPanel>
       <ListBox x:Name="AuctionSuggestionsList" MaxHeight="180" FontSize="11" PreviewMouseLeftButtonUp="AuctionSuggestion_Click" KeyDown="AuctionSuggestions_KeyDown"/>
@@ -54,6 +55,7 @@
    </Grid></Border>
    <Border x:Name="BeadPanel" Grid.Row="1" Style="{StaticResource Card}" Padding="14" Visibility="Collapsed"/>
    <Border x:Name="FeePanel" Grid.Row="1" Style="{StaticResource Card}" Padding="14" Visibility="Collapsed"/>
+   <Border x:Name="GatheringHost" Grid.Row="1" Style="{StaticResource Card}" Padding="12" Visibility="Collapsed"/>
    <Border x:Name="UpdatePanel" Grid.Row="1" Style="{StaticResource Card}" Padding="16" Visibility="Collapsed"><StackPanel>
     <TextBlock Text="프로그램 업데이트" FontSize="17" Margin="0,0,0,12"/>
     <TextBlock x:Name="CurrentVersionText" Text="현재 버전  BETA 0.1" Foreground="#B9C9FF" Margin="0,0,0,16"/>
@@ -74,18 +76,22 @@
      <Button Grid.Column="1" Content="음성 선택" Padding="10,5" Click="ChooseAudio_Click" Margin="0,0,0,6"/>
      <TextBox Grid.Row="1" x:Name="AudioPathBox" IsReadOnly="True" Padding="6,5" FontSize="10" Margin="0,0,6,0" ToolTip="선택한 알림 음성"/>
      <Button Grid.Row="1" Grid.Column="1" Content="규칙 저장" Padding="10,5" Click="AddRule_Click"/>
-     <Grid Grid.Row="2" Grid.ColumnSpan="2" Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-      <TextBlock Text="창 투명도" FontSize="11" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/>
-      <Slider Grid.Column="1" x:Name="WindowTransparencySlider" Style="{StaticResource SimpleSlider}" Minimum="0" Maximum="80" Value="0" Margin="10,0" VerticalAlignment="Center" ValueChanged="WindowTransparency_ValueChanged" ToolTip="0%는 불투명 · 상단바는 그대로 유지"/>
-      <TextBlock Grid.Column="2" x:Name="WindowTransparencyText" Text="0%" FontSize="11" VerticalAlignment="Center" Width="32" TextAlignment="Right"/>
-     </Grid>
+
     </Grid>
    </Grid></Border>
   </Grid>
    <TextBlock x:Name="BuffPolicyNotice" Text="넥슨정책상 해당 기능이 지원되지 않습니다." Foreground="White" FontSize="14" TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16" IsHitTestVisible="False"/>
    </Grid>
-   <Button Grid.Row="2" x:Name="ScheduleSiteButton" Content="블랙카드 일정 사이트" Click="ScheduleSite_Click" Padding="10,7" Margin="0,6,0,0"/>
+   <StackPanel Grid.Row="2">
+    <Border Background="{StaticResource NavyGradient}" CornerRadius="12" Padding="12,4" Margin="0,6,0,0"><Grid x:Name="TransparencyFooter"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+     <TextBlock Text="창 투명도" FontSize="11" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/>
+     <Slider Grid.Column="1" x:Name="WindowTransparencySlider" Style="{StaticResource SimpleSlider}" Minimum="0" Maximum="80" Value="0" Margin="10,0" VerticalAlignment="Center" ValueChanged="WindowTransparency_ValueChanged" ToolTip="0%는 불투명 · 상단바는 그대로 유지"/>
+     <TextBlock Grid.Column="2" x:Name="WindowTransparencyText" Text="0%" FontSize="11" VerticalAlignment="Center" Width="32" TextAlignment="Right"/>
+    </Grid></Border>
+    <Button x:Name="ScheduleSiteButton" Content="블랙카드 일정 사이트" Click="ScheduleSite_Click" Padding="10,7" Margin="0,6,0,0"/>
+   </StackPanel>
   </Grid>
+  <Border x:Name="GatheringToast" Grid.Row="1" Visibility="Collapsed" VerticalAlignment="Bottom" Margin="12,0,12,84" Panel.ZIndex="40" Background="{StaticResource NavyGradient}" CornerRadius="12" Padding="12,9" IsHitTestVisible="False"><TextBlock x:Name="GatheringToastText" Foreground="#B8F0BF" TextWrapping="Wrap" FontSize="12"/></Border>
   <Canvas x:Name="ClickEffectsCanvas" Grid.RowSpan="2" Panel.ZIndex="50" IsHitTestVisible="False" ClipToBounds="True"/>
   <Popup x:Name="MusicPopup" PlacementTarget="{Binding ElementName=MusicTabButton}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
    <Border Background="{StaticResource NavyGradient}" BorderBrush="{StaticResource OutlineGradient}" BorderThickness="0" CornerRadius="14" Padding="14" Width="290" TextElement.Foreground="#EDF0F8" Opacity="{Binding Opacity, ElementName=FeaturePanel}"><StackPanel>
@@ -100,6 +106,8 @@
   </Popup>
  </Grid></Border>
 </Window>
+
+
 
 
 
