@@ -91,7 +91,7 @@
     <Button x:Name="ScheduleSiteButton" Content="블랙카드 일정 사이트" Click="ScheduleSite_Click" Padding="10,7" Margin="0,6,0,0"/>
    </StackPanel>
   </Grid>
-  <Border x:Name="GatheringToast" Grid.Row="1" Visibility="Collapsed" VerticalAlignment="Bottom" Margin="12,0,12,84" Panel.ZIndex="40" Background="{StaticResource NavyGradient}" CornerRadius="12" Padding="12,9" IsHitTestVisible="False"><TextBlock x:Name="GatheringToastText" Foreground="#B8F0BF" TextWrapping="Wrap" FontSize="12"/></Border>
+  <Border x:Name="GatheringToast" Grid.Row="1" Visibility="Collapsed" VerticalAlignment="Bottom" Margin="12,0,12,84" Panel.ZIndex="40" Background="{StaticResource NavyGradient}" CornerRadius="12" Padding="12,9" IsHitTestVisible="False" Opacity="{Binding Opacity, ElementName=FeaturePanel}"><TextBlock x:Name="GatheringToastText" Foreground="#B8F0BF" TextWrapping="Wrap" FontSize="12"/></Border>
   <Canvas x:Name="ClickEffectsCanvas" Grid.RowSpan="2" Panel.ZIndex="50" IsHitTestVisible="False" ClipToBounds="True"/>
   <Popup x:Name="MusicPopup" PlacementTarget="{Binding ElementName=MusicTabButton}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
    <Border Background="{StaticResource NavyGradient}" BorderBrush="{StaticResource OutlineGradient}" BorderThickness="0" CornerRadius="14" Padding="14" Width="290" TextElement.Foreground="#EDF0F8" Opacity="{Binding Opacity, ElementName=FeaturePanel}"><StackPanel>

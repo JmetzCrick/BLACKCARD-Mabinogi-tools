@@ -2,6 +2,7 @@
  <Application.Resources>
   <FontFamily x:Key="GameFont">/블랙카드 도우미;component/Assets/Fonts/#Mabinogi_Classic</FontFamily>
   <Style x:Key="GatherAlarmToggle" TargetType="CheckBox">
+   <Setter Property="Foreground" Value="#EDF0F8"/>
    <Setter Property="Cursor" Value="Hand"/>
    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="CheckBox"><StackPanel Orientation="Horizontal" VerticalAlignment="Center">
     <Border x:Name="ToggleSurface" Width="14" Height="14" CornerRadius="5" Background="#29365F" VerticalAlignment="Center"><Path x:Name="ToggleMark" Data="M 3,7 L 6,10 L 11,4" Stroke="White" StrokeThickness="1.5" Visibility="Collapsed"/></Border>
