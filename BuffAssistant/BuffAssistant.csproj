@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>Assets\Images\AppIcon.ico</ApplicationIcon>
+    <AssemblyName>블랙카드 도우미</AssemblyName>
+    <Product>블랙카드 도우미</Product>
+    <AssemblyTitle>블랙카드 도우미</AssemblyTitle>
+    <Version>0.1.1-beta.1</Version>
+    <AssemblyVersion>0.1.1.0</AssemblyVersion>
+    <FileVersion>0.1.1.0</FileVersion>
+    <InformationalVersion>BETA 0.1.1</InformationalVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="auction-shared.enc" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="github-update.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="auction-key.bin" CopyToOutputDirectory="PreserveNewest" Condition="'$(PublicRelease)' != 'true'" />
+    <Content Include="Assets\auction-names.json" CopyToOutputDirectory="PreserveNewest" />
+    <PackageReference Include="Tesseract" Version="5.2.0" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\Music\*.mp3" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\Alerts\*.mp3" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\FastPing\*.bat" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\Updates\*.ps1" CopyToOutputDirectory="PreserveNewest" />
+    <Resource Include="Assets\Images\LoadingCharacter.png" />
+    <Resource Include="Assets\Images\AppIcon.ico" />
+    <Resource Include="Assets\Fonts\Mabinogi_Classic_TTF.ttf" />
+    <Content Include="tessdata\\**\\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,49 @@
+name: Build, test and release
+on:
+  push:
+    branches: [main]
+    paths: ['BuffAssistant/**', 'SmokeTests/**', 'Scripts/**', 'DistributionDocs/**', '.github/workflows/**']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: blackcard-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build regression tests
+        run: dotnet build SmokeTests/SmokeTests.csproj -c Release -o TestOutput
+      - name: Test detection, calculators, auction and GitHub updates
+        run: dotnet TestOutput/SmokeTests.dll --ci
+      - name: Test update install and rollback
+        run: dotnet TestOutput/SmokeTests.dll --updater-fixture
+      - name: Publish Windows x64 archive
+        shell: pwsh
+        run: ./Scripts/Publish-Release.ps1
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BlackCardHelper-win-x64
+          path: ReleaseArtifacts/*
+      - name: Publish new version to GitHub Releases
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          [xml]$project = Get-Content BuffAssistant/BuffAssistant.csproj
+          $version = [string]$project.Project.PropertyGroup.Version
+          $tag = 'v' + $version
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) { Write-Output 'This version is already published. Increase the project version for the next update.'; exit 0 }
+          $args = @('release', 'create', $tag, '--target', '${{ github.sha }}', '--title', ('BlackCardHelper ' + $version), '--notes', 'Windows x64 standalone package. Extract all files and run 블랙카드 도우미.exe. Includes encrypted shared auction API key.')
+          if ($version -match 'beta') { $args += '--prerelease' }
+          $args += @(Get-ChildItem ReleaseArtifacts/* -File | ForEach-Object FullName)
+          & gh @args
+          if ($LASTEXITCODE -ne 0) { throw 'GitHub Release publishing failed' }

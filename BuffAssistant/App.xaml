@@ -1,0 +1,60 @@
+<Application x:Class="BuffAssistant.App" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <Application.Resources>
+  <FontFamily x:Key="GameFont">/블랙카드 도우미;component/Assets/Fonts/#Mabinogi_Classic</FontFamily>
+  <Style x:Key="CalculatorScrollBar" TargetType="ScrollBar">
+   <Setter Property="Width" Value="9"/><Setter Property="Background" Value="Transparent"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ScrollBar"><Grid Background="Transparent">
+    <Track x:Name="PART_Track" Orientation="Vertical" IsDirectionReversed="True" Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" Value="{TemplateBinding Value}" ViewportSize="{TemplateBinding ViewportSize}">
+     <Track.DecreaseRepeatButton><RepeatButton Command="ScrollBar.PageUpCommand"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Background="Transparent"/></ControlTemplate></RepeatButton.Template></RepeatButton></Track.DecreaseRepeatButton>
+     <Track.Thumb><Thumb><Thumb.Template><ControlTemplate TargetType="Thumb"><Border Background="#536AAB" CornerRadius="3" Margin="2,0"/></ControlTemplate></Thumb.Template></Thumb></Track.Thumb>
+     <Track.IncreaseRepeatButton><RepeatButton Command="ScrollBar.PageDownCommand"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Background="Transparent"/></ControlTemplate></RepeatButton.Template></RepeatButton></Track.IncreaseRepeatButton>
+    </Track>
+   </Grid></ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="SimpleSlider" TargetType="Slider">
+   <Setter Property="Height" Value="22"/><Setter Property="Cursor" Value="Hand"/><Setter Property="IsMoveToPointEnabled" Value="True"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Slider"><Grid VerticalAlignment="Center">
+    <Border Height="3" Background="#26335B" CornerRadius="2" Margin="5,0"/>
+    <Track x:Name="PART_Track" Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" Value="{TemplateBinding Value}" IsDirectionReversed="{TemplateBinding IsDirectionReversed}">
+     <Track.DecreaseRepeatButton><RepeatButton Command="Slider.DecreaseLarge" Focusable="False"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Height="3" Background="#95B1EE" CornerRadius="2"/></ControlTemplate></RepeatButton.Template></RepeatButton></Track.DecreaseRepeatButton>
+     <Track.Thumb><Thumb Width="10" Height="10"><Thumb.Template><ControlTemplate TargetType="Thumb"><Ellipse x:Name="Dot" Fill="#CFDCFF"/><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Dot" Property="Fill" Value="White"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Thumb.Template></Thumb></Track.Thumb>
+     <Track.IncreaseRepeatButton><RepeatButton Command="Slider.IncreaseLarge" Focusable="False"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Background="Transparent"/></ControlTemplate></RepeatButton.Template></RepeatButton></Track.IncreaseRepeatButton>
+    </Track>
+   </Grid></ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <LinearGradientBrush x:Key="NavyGradient" StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#161C66" Offset="0"/><GradientStop Color="#111641" Offset="0.45"/><GradientStop Color="#090D22" Offset="1"/></LinearGradientBrush>
+  <SolidColorBrush x:Key="FrameGradient" Color="#020715"/>
+  <SolidColorBrush x:Key="OutlineGradient" Color="#020715"/>
+  <LinearGradientBrush x:Key="ButtonGradient" StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#283574" Offset="0"/><GradientStop Color="#141C46" Offset="1"/></LinearGradientBrush>
+  <SolidColorBrush x:Key="Muted" Color="#98A3B8"/>
+  <Style TargetType="Window"><Setter Property="FontFamily" Value="{StaticResource GameFont}"/><Setter Property="FontSize" Value="13"/><Setter Property="Background" Value="{StaticResource FrameGradient}"/><Setter Property="Foreground" Value="#EDF0F8"/></Style>
+  <Style TargetType="Button">
+   <Setter Property="Background" Value="{StaticResource ButtonGradient}"/><Setter Property="Foreground" Value="#EDF0F8"/><Setter Property="Padding" Value="16,10"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="12" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="Opacity" Value="0.8"/></Trigger><Trigger Property="IsPressed" Value="True"><Setter TargetName="Surface" Property="Opacity" Value="0.6"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter TargetName="Surface" Property="Opacity" Value="0.35"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="Opacity" Value="0.9"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style TargetType="TextBox"><Setter Property="BorderThickness" Value="0"/><Setter Property="Background" Value="#0B1028"/><Setter Property="Foreground" Value="#EDF0F8"/><Setter Property="CaretBrush" Value="White"/><Setter Property="BorderBrush" Value="Transparent"/><Setter Property="Padding" Value="10,8"/></Style>
+  <Style TargetType="ComboBox"><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="10,8"/><Setter Property="Foreground" Value="#152033"/></Style>
+  <Style x:Key="AuctionSearchMode" TargetType="ComboBox">
+   <Setter Property="Foreground" Value="#EDF0F8"/><Setter Property="Background" Value="{StaticResource ButtonGradient}"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="ItemContainerStyle"><Setter.Value><Style TargetType="ComboBoxItem"><Setter Property="Foreground" Value="#EDF0F8"/><Setter Property="Padding" Value="10,8"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBoxItem"><Border x:Name="ItemSurface" Background="Transparent" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsHighlighted" Value="True"><Setter TargetName="ItemSurface" Property="Background" Value="#2C3D7C"/></Trigger><Trigger Property="IsSelected" Value="True"><Setter TargetName="ItemSurface" Property="Background" Value="#314BA6"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style></Setter.Value></Setter>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBox"><Grid>
+    <ToggleButton x:Name="Toggle" Foreground="{TemplateBinding Foreground}" Focusable="False" IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"><ToggleButton.Template><ControlTemplate TargetType="ToggleButton"><Border x:Name="ModeSurface" Background="{Binding Background, RelativeSource={RelativeSource AncestorType=ComboBox}}" CornerRadius="12"><Grid Margin="10,7"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="16"/></Grid.ColumnDefinitions><ContentPresenter Content="{Binding SelectionBoxItem, RelativeSource={RelativeSource AncestorType=ComboBox}}" VerticalAlignment="Center"/><Path Grid.Column="1" Data="M 0 0 L 4 4 L 8 0" Stroke="#B9C9FF" StrokeThickness="1.3" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ModeSurface" Property="Opacity" Value="0.85"/></Trigger></ControlTemplate.Triggers></ControlTemplate></ToggleButton.Template></ToggleButton>
+    <Popup x:Name="PART_Popup" IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade"><Border Background="#101633" CornerRadius="12" Padding="5" MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"><ScrollViewer MaxHeight="200"><ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/></ScrollViewer></Border></Popup>
+   </Grid></ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style TargetType="ListBox"><Setter Property="Background" Value="#0B1028"/><Setter Property="Foreground" Value="#C9D2E4"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="8"/><Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/></Style>
+  <Style TargetType="ListBoxItem"><Setter Property="Padding" Value="8,6"/></Style>
+  <Style TargetType="CheckBox"><Setter Property="Foreground" Value="#C9D2E4"/></Style>
+  <Style TargetType="DataGrid"><Setter Property="Background" Value="{StaticResource NavyGradient}"/><Setter Property="Foreground" Value="#EDF0F8"/><Setter Property="BorderThickness" Value="0"/><Setter Property="RowBackground" Value="#101633"/><Setter Property="AlternatingRowBackground" Value="#161E42"/><Setter Property="GridLinesVisibility" Value="None"/><Setter Property="HeadersVisibility" Value="Column"/><Setter Property="RowHeight" Value="46"/><Setter Property="ColumnHeaderHeight" Value="36"/></Style>
+  <Style TargetType="DataGridColumnHeader"><Setter Property="Background" Value="#1D2854"/><Setter Property="Foreground" Value="#98A3B8"/><Setter Property="Padding" Value="12,8"/><Setter Property="BorderThickness" Value="0"/></Style>
+  <Style TargetType="DataGridCell"><Setter Property="Padding" Value="12,8"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="DataGridCell"><Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"><ContentPresenter VerticalAlignment="Center"/></Border></ControlTemplate></Setter.Value></Setter><Style.Triggers><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#263571"/><Setter Property="Foreground" Value="White"/></Trigger></Style.Triggers></Style>
+  <Style x:Key="Card" TargetType="Border"><Setter Property="Background" Value="{StaticResource NavyGradient}"/><Setter Property="BorderBrush" Value="{StaticResource OutlineGradient}"/><Setter Property="BorderThickness" Value="0"/><Setter Property="CornerRadius" Value="18"/><Setter Property="Padding" Value="20"/></Style>
+  <Style x:Key="SectionTitle" TargetType="TextBlock"><Setter Property="FontSize" Value="17"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Margin" Value="0,0,0,14"/></Style>
+ </Application.Resources>
+</Application>
+
+
+
+
+
+

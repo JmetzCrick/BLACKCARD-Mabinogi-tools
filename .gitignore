@@ -1,0 +1,17 @@
+**/bin/
+**/obj/
+**/auction-key.bin
+Publish/
+Release/
+ReleaseArtifacts/
+UpdateShare/
+TestOutput/
+*TestsOutput/
+*.pdb
+*.user
+design-preview.png
+auction-preview.png
+loading-preview.png
+bead-preview.png
+fee-preview.png
+fastping-preview.png
