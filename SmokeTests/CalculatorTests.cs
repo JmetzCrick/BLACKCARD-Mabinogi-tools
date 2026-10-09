@@ -29,8 +29,8 @@ internal static class CalculatorTests
             }
             else inputs["price"].Text = "666666666";
             var root = (FrameworkElement)main.Content;
-            root.Measure(new Size(440, 584)); root.Arrange(new Rect(0, 0, 440, 584)); root.UpdateLayout();
-            var bitmap = new RenderTargetBitmap(440, 584, 96, 96, PixelFormats.Pbgra32);
+            root.Measure(new Size(440, 680)); root.Arrange(new Rect(0, 0, 440, 680)); root.UpdateLayout();
+            var bitmap = new RenderTargetBitmap(440, 680, 96, 96, PixelFormats.Pbgra32);
             bitmap.Render(root);
             var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
             using var file = System.IO.File.Create(beads ? "bead-preview.png" : "fee-preview.png"); encoder.Save(file);
@@ -62,3 +62,4 @@ internal static class CalculatorTests
         }
     }
 }
+

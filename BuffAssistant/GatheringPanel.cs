@@ -48,7 +48,14 @@ public sealed class GatheringPanel : UserControl, IDisposable
         volumeRow.Children.Add(_volume); volumeRow.Children.Add(_volumeLabel); controls.Children.Add(volumeRow);
         Grid.SetColumn(controls, 1); header.Children.Add(controls); root.Children.Add(header);
         _summary.Margin = new(0, 0, 0, 9); Grid.SetRow(_summary, 1); root.Children.Add(_summary);
-        var legend = new TextBlock { Text = "채집물 / 에린 시간                     남은 현실 시간     알람", FontSize = 10, Foreground = Brushes.LightSteelBlue, Margin = new(0, 0, 0, 5) };
+        var legend = new Grid { Margin = new(9, 0, 20, 5) };
+        legend.ColumnDefinitions.Add(new() { Width = new GridLength(1, GridUnitType.Star) });
+        legend.ColumnDefinitions.Add(new() { Width = new GridLength(110) });
+        legend.ColumnDefinitions.Add(new() { Width = new GridLength(30) });
+        var nameHeading = new TextBlock { Text = "채집물 / 에린 시작 → 종료", FontSize = 10, Foreground = Brushes.LightSteelBlue };
+        var timerHeading = new TextBlock { Text = "남은 현실 시간", FontSize = 10, Foreground = Brushes.LightSteelBlue, TextAlignment = TextAlignment.Right, Margin = new(0,0,8,0) };
+        var alarmHeading = new TextBlock { Text = "알람", FontSize = 10, Foreground = Brushes.LightSteelBlue, TextAlignment = TextAlignment.Center };
+        legend.Children.Add(nameHeading); Grid.SetColumn(timerHeading,1); legend.Children.Add(timerHeading); Grid.SetColumn(alarmHeading,2); legend.Children.Add(alarmHeading);
         Grid.SetRow(legend, 2); root.Children.Add(legend);
         var list = new StackPanel();
         foreach (var item in GatheringSchedule.Items)
@@ -59,7 +66,7 @@ public sealed class GatheringPanel : UserControl, IDisposable
             row.ColumnDefinitions.Add(new() { Width = new GridLength(30) });
             var name = new StackPanel();
             name.Children.Add(new TextBlock { Text = item.Name, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis });
-            name.Children.Add(new TextBlock { Text = item.TimeRange, FontSize = 10, Foreground = Brushes.LightSteelBlue, Margin = new(0, 3, 0, 0) });
+            name.Children.Add(new TextBlock { Text = item.ClearTimeRange, FontSize = 10, Foreground = Brushes.LightSteelBlue, TextWrapping = TextWrapping.Wrap, Margin = new(0, 3, 0, 0), ToolTip = "에린 시간 " + item.TimeRange });
             row.Children.Add(name);
             var status = new TextBlock { FontSize = 11, TextAlignment = TextAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Margin = new(0, 0, 8, 0) };
             _statuses[item.Name] = status; Grid.SetColumn(status, 1); row.Children.Add(status);
@@ -69,7 +76,7 @@ public sealed class GatheringPanel : UserControl, IDisposable
             check.Checked += Changed; check.Unchecked += Changed;
             list.Children.Add(new Border { Background = new SolidColorBrush(Color.FromRgb(11, 16, 40)), CornerRadius = new(10), Padding = new(9, 7, 7, 7), Margin = new(0, 0, 0, 5), ToolTip = item.Skill, Child = row });
         }
-        var scroll = new ScrollViewer { Content = list, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, Padding = new(0, 0, 4, 0) };
+        var scroll = new ScrollViewer { Content = list, VerticalScrollBarVisibility = ScrollBarVisibility.Visible, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, Padding = new(0, 0, 4, 0) };
         scroll.Resources.Add(typeof(ScrollBar), Application.Current.FindResource("CalculatorScrollBar"));
         Grid.SetRow(scroll, 3); root.Children.Add(scroll);
         var foot = new StackPanel { Margin = new(0, 5, 0, 0) };
@@ -128,3 +135,4 @@ public sealed class GatheringPanel : UserControl, IDisposable
     private static string Countdown(TimeSpan span) => $"{(int)Math.Ceiling(span.TotalSeconds) / 60:00}:{(int)Math.Ceiling(span.TotalSeconds) % 60:00}";
     public void Dispose() { _timer.Stop(); _sound.Dispose(); }
 }
+

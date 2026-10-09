@@ -32,6 +32,13 @@ public sealed class ItemNameCatalog
         foreach (var name in names.Where(n => !string.IsNullOrWhiteSpace(n))) _names.Add(name.Trim());
     }
     public IReadOnlyList<string> Suggest(string query, int limit = 50) => MatchNames(_names, query, limit);
+    public string ResolveName(string query)
+    {
+        query = AuctionService.NormalizeQuery(query);
+        var compact = string.Concat(query.Where(c => !char.IsWhiteSpace(c)));
+        var matches = _names.Where(n => string.Concat(n.Where(c => !char.IsWhiteSpace(c))).Equals(compact, StringComparison.OrdinalIgnoreCase)).Take(2).ToArray();
+        return matches.Length == 1 ? matches[0] : query;
+    }
     public static IReadOnlyList<string> MatchNames(IEnumerable<string> names, string query, int limit = 50)
     {
         static string Normalize(string text) => string.Concat(text.Where(c => !char.IsWhiteSpace(c)));

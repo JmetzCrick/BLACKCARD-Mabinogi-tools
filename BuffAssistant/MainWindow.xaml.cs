@@ -52,8 +52,10 @@ public partial class MainWindow : Window
     private bool _musicEnabled = true;
     private bool _closed;
     private bool _featuresCollapsed;
-    private double _expandedHeight = 616;
-    private double _expandedMinHeight = 596;
+    private System.Windows.Forms.NotifyIcon? _tray;
+    private bool _allowExit;
+    private double _expandedHeight = 680;
+    private double _expandedMinHeight = 660;
     private ResizeMode _expandedResizeMode;
     private readonly System.Windows.Threading.DispatcherTimer _musicUiTimer = new() { Interval = TimeSpan.FromMilliseconds(400) };
 
@@ -98,15 +100,23 @@ public partial class MainWindow : Window
         }
 
         LoadSettings(autoPlayMusic);
+        if (autoPlayMusic)
+        {
+            InitializeTray();
+            Loaded += (_, _) => { if (StartBackgroundCheck.IsChecked == true || Environment.GetCommandLineArgs().Contains("--background")) HideToTray(); };
+            Closing += (_, args) => { if (!_allowExit && CloseToTrayCheck.IsChecked == true) { args.Cancel = true; HideToTray(); } };
+        }
         SelectFeatureTab(true);
         if (autoPlayMusic) Loaded += async (_, _) => await CheckStartupUpdateAsync();
         UpdateMusicButtons();
-        _musicUiTimer.Tick += (_, _) => UpdateMusicButtons();
+        _musicUiTimer.Tick += (_, _) => { UpdateMusicButtons(); UpdateErinClock(); };
+        UpdateErinClock();
         _musicUiTimer.Start();
         RefreshRules();
         Closed += (_, _) =>
         {
             _closed = true;
+            _tray?.Dispose();
             _gathering.Dispose();
             _gatheringToastTimer.Stop();
             ClickEffectsCanvas.Children.Clear();
@@ -129,6 +139,11 @@ public partial class MainWindow : Window
         try
         {
             var settings = _settings.Load();
+            StartBackgroundCheck.IsChecked = settings.StartInBackground;
+            CloseToTrayCheck.IsChecked = settings.CloseToTray;
+            AlwaysTopCheck.IsChecked = settings.AlwaysOnTop;
+            Topmost = settings.AlwaysOnTop;
+            try { StartupCheck.IsChecked = StartupService.IsEnabled(); } catch { SettingsStatusText.Text = "자동 실행 설정을 읽을 수 없습니다."; }
             _gathering.Load(settings.GatheringAlarmsEnabled, settings.GatheringAlarmItems ?? new(), settings.GatheringVolumePercent);
             var bundled = Path.Combine(AppContext.BaseDirectory, "Assets", "Music", "Etain.mp3");
             foreach (var path in MusicCatalog.Normalize(settings.MusicFiles, bundled))
@@ -183,6 +198,9 @@ public partial class MainWindow : Window
             GatheringAlarmsEnabled = _gathering.AlarmsEnabled,
             GatheringAlarmItems = _gathering.SelectedItems,
             GatheringVolumePercent = _gathering.VolumePercent,
+            StartInBackground = StartBackgroundCheck.IsChecked == true,
+            CloseToTray = CloseToTrayCheck.IsChecked == true,
+            AlwaysOnTop = AlwaysTopCheck.IsChecked == true,
             UpdateFeedUrl = _updateFeedPath,
             BuffRules = _rules.Select(r => new SavedBuffRule
             {
@@ -336,6 +354,7 @@ public partial class MainWindow : Window
         FeePanel.Visibility = Visibility.Collapsed;
         BeadTabButton.Background = (System.Windows.Media.Brush)FindResource("ButtonGradient");
         FeeTabButton.Background = (System.Windows.Media.Brush)FindResource("ButtonGradient");
+        SettingsPanel.Visibility = Visibility.Collapsed;
         UpdatePanel.Visibility = Visibility.Collapsed;
         AuctionPanel.Visibility = Visibility.Collapsed;
         AuctionSuggestionsPopup.IsOpen = false;
@@ -346,6 +365,7 @@ public partial class MainWindow : Window
         BuffTabButton.Background = fastPing ? inactive : active;
         FastPingTabButton.Background = fastPing ? active : inactive;
         AuctionTabButton.Background = inactive;
+        SettingsTabButton.Background = inactive;
         UpdateTabButton.Background = inactive;
     }
     private void GatheringTab_Click(object sender, RoutedEventArgs e)
@@ -356,6 +376,14 @@ public partial class MainWindow : Window
         GatheringTabButton.Background = BuffTabButton.Background;
         BuffTabButton.Background = (System.Windows.Media.Brush)FindResource("ButtonGradient");
         _gathering.Refresh();
+    }
+    private void SettingsTab_Click(object sender, RoutedEventArgs e)
+    {
+        SelectFeatureTab(false);
+        BuffPanel.Visibility = Visibility.Collapsed;
+        SettingsPanel.Visibility = Visibility.Visible;
+        SettingsTabButton.Background = BuffTabButton.Background;
+        BuffTabButton.Background = (System.Windows.Media.Brush)FindResource("ButtonGradient");
     }
     private void UpdateTab_Click(object sender, RoutedEventArgs e)
     {
@@ -548,7 +576,7 @@ public partial class MainWindow : Window
         {
             if (!more)
             {
-                _auctionQuery = AuctionQueryBox.Text.Trim();
+                _auctionQuery = AuctionModeBox.SelectedIndex == 1 ? AuctionService.NormalizeQuery(AuctionQueryBox.Text) : _itemNames.ResolveName(AuctionQueryBox.Text);
                 _auctionKeywords = AuctionModeBox.SelectedIndex == 1;
                 _auctionCursor = null;
                 _auctionItems.Clear();
@@ -603,8 +631,8 @@ public partial class MainWindow : Window
             _expandedMinHeight = MinHeight;
             _expandedResizeMode = ResizeMode;
             FeaturePanel.Visibility = Visibility.Collapsed;
-            MinHeight = 42;
-            Height = 42;
+            MinHeight = 106;
+            Height = 106;
             ResizeMode = ResizeMode.NoResize;
             CollapseButton.Content = "\uE70D";
             CollapseButton.ToolTip = "기능창 펼치기";
@@ -621,11 +649,50 @@ public partial class MainWindow : Window
         _featuresCollapsed = !_featuresCollapsed;
     }
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
+    private void UpdateErinClock()
+    {
+        var minute = ErinClock.Minute(DateTimeOffset.UtcNow);
+        ErinPeriodText.Text = minute < 720 ? "AM" : "PM";
+        var hour = minute / 60 % 12;
+        ErinDigitalText.Text = $"{(hour == 0 ? 12 : hour):00} : {minute % 60:00}";
+    }
+    private void InitializeTray()
+    {
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "블랙카드 도우미.exe");
+        using var icon = System.Drawing.Icon.ExtractAssociatedIcon(iconPath);
+        var menu = new System.Windows.Forms.ContextMenuStrip();
+        menu.Items.Add("블랙카드 도우미 열기", null, (_, _) => Dispatcher.Invoke(RestoreFromTray));
+        menu.Items.Add("종료", null, (_, _) => Dispatcher.Invoke(() => { _allowExit = true; Close(); }));
+        _tray = new System.Windows.Forms.NotifyIcon { Icon = icon is null ? System.Drawing.SystemIcons.Application : (System.Drawing.Icon)icon.Clone(), Text = "블랙카드 도우미", ContextMenuStrip = menu, Visible = true };
+        _tray.DoubleClick += (_, _) => Dispatcher.Invoke(RestoreFromTray);
+    }
+    private void RestoreFromTray() { Show(); ShowInTaskbar = true; WindowState = WindowState.Normal; Activate(); }
+    public void HideToTray()
+    {
+        if (_tray is null) { SettingsStatusText.Text = "트레이 아이콘을 준비할 수 없습니다."; return; }
+        MusicPopup.IsOpen = AuctionSuggestionsPopup.IsOpen = false;
+        ShowInTaskbar = false; Hide();
+        _tray.ShowBalloonTip(2500, "블랙카드 도우미", "백그라운드에서 채집 알람이 계속 동작합니다. 트레이 아이콘을 두 번 클릭하면 열립니다.", System.Windows.Forms.ToolTipIcon.Info);
+    }
+    private void Background_Click(object sender, RoutedEventArgs e) => HideToTray();
+    private void Startup_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_loadingSettings) return;
+        try { StartupService.SetEnabled(StartupCheck.IsChecked == true, StartBackgroundCheck.IsChecked == true); SettingsStatusText.Text = StartupCheck.IsChecked == true ? "Windows 로그인 시 자동 실행합니다." : "자동 실행을 껐습니다."; }
+        catch { _loadingSettings = true; StartupCheck.IsChecked = !StartupCheck.IsChecked; _loadingSettings = false; SettingsStatusText.Text = "자동 실행 설정을 저장하지 못했습니다."; }
+    }
+    private void Preferences_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_loadingSettings) return;
+        Topmost = AlwaysTopCheck.IsChecked == true;
+        if (ReferenceEquals(sender, StartBackgroundCheck) && StartupCheck.IsChecked == true) Startup_Changed(StartupCheck, e);
+        SaveSettings();
+    }
     private void ShowClickRipple(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         if (_closed || e.ChangedButton != System.Windows.Input.MouseButton.Left) return;
         var point = e.GetPosition(ClickEffectsCanvas);
-        if (point.Y < 42 || point.X < 0 || point.Y > ClickEffectsCanvas.ActualHeight || point.X > ClickEffectsCanvas.ActualWidth) return;
+        if (point.Y < 106 || point.X < 0 || point.Y > ClickEffectsCanvas.ActualHeight || point.X > ClickEffectsCanvas.ActualWidth) return;
         while (ClickEffectsCanvas.Children.Count >= 12) ClickEffectsCanvas.Children.RemoveAt(0);
         var ring = new System.Windows.Shapes.Ellipse
         {
@@ -797,6 +864,7 @@ public sealed class MusicFileItem
         ? "여름 들장미의 향기 · 에탄 BGM" : System.IO.Path.GetFileName(Path);
     public MusicFileItem(string path) => Path = path;
 }
+
 
 
 

@@ -25,6 +25,8 @@ public static class ErinClock
 public sealed record GatheringItem(string Name, int StartHour, int EndHour, string Skill)
 {
     public string TimeRange => $"{StartHour:00}:00–{EndHour:00}:00";
+    public string ClearTimeRange => $"{ClockLabel(StartHour)} → {ClockLabel(EndHour)}" + (StartHour > EndHour ? " (다음날)" : "");
+    private static string ClockLabel(int hour) => $"{(hour % 24 < 12 ? "AM" : "PM")} {(hour % 12 == 0 ? 12 : hour % 12):00}:00";
     public bool Available(DateTimeOffset now)
     {
         var minute = ErinClock.Minute(now);

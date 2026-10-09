@@ -15,6 +15,9 @@ public sealed class AppSettings
     public bool GatheringAlarmsEnabled { get; set; }
     public List<string> GatheringAlarmItems { get; set; } = new();
     public double GatheringVolumePercent { get; set; } = 50;
+    public bool StartInBackground { get; set; }
+    public bool CloseToTray { get; set; }
+    public bool AlwaysOnTop { get; set; }
     public string UpdateFeedUrl { get; set; } = "";
     public bool MusicRepeat { get; set; } = true;
     public bool MusicMuted { get; set; }

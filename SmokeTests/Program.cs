@@ -21,6 +21,40 @@ internal static class Program
     {
         try
         {
+            if(args.Length > 0 && args[0] == "--tray-test")
+            {
+                var trayApp=new App(); trayApp.InitializeComponent();
+                var window=new MainWindow(autoPlayMusic:false);
+                typeof(MainWindow).GetMethod("InitializeTray",BindingFlags.NonPublic|BindingFlags.Instance).Invoke(window,null);
+                window.Show(); window.HideToTray();
+                var tray=(System.Windows.Forms.NotifyIcon)typeof(MainWindow).GetField("_tray",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(window);
+                Check(!window.IsVisible && !window.ShowInTaskbar && tray.Visible,"Background conversion hides the window while keeping the character tray icon active");
+                typeof(MainWindow).GetMethod("RestoreFromTray",BindingFlags.NonPublic|BindingFlags.Instance).Invoke(window,null);
+                Check(window.IsVisible && window.ShowInTaskbar,"Tray restore brings the functional window back without restarting services");
+                window.Close();
+                return 0;
+            }
+            if (args.Length > 0 && args[0] == "--auction-ui-test")
+            {
+                var liveApp = new App(); liveApp.InitializeComponent();
+                var live = new MainWindow(autoPlayMusic:false);
+                var frame = new System.Windows.Threading.DispatcherFrame();
+                Exception failure = null;
+                live.Dispatcher.BeginInvoke(new Action(async () => {
+                    try {
+                        foreach (var sample in new[] { ("희미한 에너지 조각", 0), ("희미한에너지조각", 0), ("희미한 에너지 조각", 1) }) {
+                            ((TextBox)live.FindName("AuctionQueryBox")).Text = sample.Item1;
+                            ((ComboBox)live.FindName("AuctionModeBox")).SelectedIndex = sample.Item2;
+                            await (System.Threading.Tasks.Task)typeof(MainWindow).GetMethod("SearchAuctionAsync", BindingFlags.NonPublic|BindingFlags.Instance).Invoke(live,new object[]{false});
+                            var count = ((DataGrid)live.FindName("AuctionResultsGrid")).Items.Count;
+                            Check(count > 0,"Actual WPF search succeeds: " + sample.Item1 + " mode " + sample.Item2 + " listings " + count);
+                        }
+                    } catch(Exception e) { failure=e; } finally { frame.Continue=false; }
+                }));
+                System.Windows.Threading.Dispatcher.PushFrame(frame); live.Close();
+                if(failure != null) throw failure;
+                return 0;
+            }
             if (args.Length > 0 && args[0] == "--updater-fixture") { UpdateInstallTests.Run(Check); return 0; }
             if (args.Length > 0 && args[0] == "--auction-test")
             {
@@ -31,6 +65,7 @@ internal static class Program
             CalculatorTests.Run(Check);
             GatheringTests.Run(Check);
             AuctionFeatureTests.Run(Check);
+            AuctionRequestTests.Run(Check);
             UpdateFeatureTests.Run(Check);
             if (args.Length == 0) AudioPolicyTests.Run(Check);
             var app = new App();
@@ -38,7 +73,7 @@ internal static class Program
             var main = new MainWindow(autoPlayMusic: false, auctionDataSource: new FakeAuctionSource(), auctionHistoryPath: Path.Combine(AppContext.BaseDirectory, "ui-history.json"));
             Check(typeof(MainWindow).GetField("_ocr", BindingFlags.NonPublic | BindingFlags.Instance) == null && typeof(MainWindow).Assembly.GetType("BuffAssistant.Services.OcrService") == null, "Public build contains no active OCR service or engine initialization");
             var tab = (Button)main.FindName("BuffTabButton");
-            Check(Grid.GetRow(tab) == 1 && Grid.GetColumn(tab) == 3, "Music buff tab moved to bottom-right");
+            Check(Grid.GetRow(tab) == 1 && Grid.GetColumn(tab) == 1, "Music buff tab is left of the rightmost settings tab");
             Check(((TextBlock)main.FindName("BuffWarningIcon")).Text == "❗", "Music buff tab has small warning emoji");
             typeof(MainWindow).GetMethod("BuffTab_Click", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(main, new object[] { main, new RoutedEventArgs() });
             var menu = (Grid)main.FindName("BuffMenu");
@@ -48,8 +83,8 @@ internal static class Program
             typeof(MainWindow).GetMethod("Start_Click", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(main, new object[] { main, new RoutedEventArgs() });
             Check(((TextBlock)main.FindName("StatusText")).Text == notice.Text, "Direct detection invocation is blocked without OCR or audio");
             var root = (FrameworkElement)main.Content;
-            root.Measure(new Size(440,584)); root.Arrange(new Rect(0,0,440,584)); root.UpdateLayout();
-            var bitmap = new RenderTargetBitmap(440,584,96,96,PixelFormats.Pbgra32); bitmap.Render(root);
+            root.Measure(new Size(440,680)); root.Arrange(new Rect(0,0,440,680)); root.UpdateLayout();
+            var bitmap = new RenderTargetBitmap(440,680,96,96,PixelFormats.Pbgra32); bitmap.Render(root);
             var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
             using (var file = File.Create("buff-policy-preview.png")) encoder.Save(file);
             CalculatorTests.RunUi(main, Check);
@@ -63,10 +98,21 @@ internal static class Program
             Check(((Grid)main.FindName("FeaturePanel")).Opacity == 0.75 && ((Border)main.FindName("TitleBar")).Opacity == 1, "Transparency changes functional content while keeping the title bar opaque");
             transparency.Value = 0;
             typeof(MainWindow).GetMethod("ApplyWindowTransparency", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(main, null);
-            root.Measure(new Size(440,616)); root.Arrange(new Rect(0,0,440,616)); root.UpdateLayout();
-            var gatheringBitmap = new RenderTargetBitmap(440,616,96,96,PixelFormats.Pbgra32); gatheringBitmap.Render(root);
+            root.Measure(new Size(440,680)); root.Arrange(new Rect(0,0,440,680)); root.UpdateLayout();
+            var gatheringBitmap = new RenderTargetBitmap(440,680,96,96,PixelFormats.Pbgra32); gatheringBitmap.Render(root);
             var gatheringEncoder = new PngBitmapEncoder(); gatheringEncoder.Frames.Add(BitmapFrame.Create(gatheringBitmap));
             using (var file = File.Create("gathering-preview.png")) gatheringEncoder.Save(file);
+            var clockFrame = (Border)main.FindName("ClockFrame");
+            Check(clockFrame.BorderThickness.Left == 1 && clockFrame.Margin.Bottom > 0 && Grid.GetRow(clockFrame) == 0, "Digital clock has matching outline and spacing above title bar");
+            typeof(MainWindow).GetMethod("Minimize_Click", BindingFlags.NonPublic|BindingFlags.Instance)!.Invoke(main,new object[]{main,new RoutedEventArgs()});
+            Check(main.Height == 106 && clockFrame.Visibility == Visibility.Visible && ((Grid)main.FindName("FeaturePanel")).Visibility == Visibility.Collapsed, "Folding functions retains both digital clock and title bar");
+            typeof(MainWindow).GetMethod("Minimize_Click", BindingFlags.NonPublic|BindingFlags.Instance)!.Invoke(main,new object[]{main,new RoutedEventArgs()});
+            typeof(MainWindow).GetMethod("SettingsTab_Click", BindingFlags.NonPublic|BindingFlags.Instance)!.Invoke(main,new object[]{main,new RoutedEventArgs()});
+            Check(Grid.GetColumn((Button)main.FindName("SettingsTabButton")) == 3 && ((Border)main.FindName("SettingsPanel")).Visibility == Visibility.Visible, "Compact settings tab is rightmost and replaces wide update tab");
+            root.Measure(new Size(440,680)); root.Arrange(new Rect(0,0,440,680)); root.UpdateLayout();
+            var settingsBitmap = new RenderTargetBitmap(440,680,96,96,PixelFormats.Pbgra32); settingsBitmap.Render(root);
+            var settingsEncoder = new PngBitmapEncoder(); settingsEncoder.Frames.Add(BitmapFrame.Create(settingsBitmap));
+            using(var file=File.Create("settings-preview.png")) settingsEncoder.Save(file);
             Check(((TextBlock)main.FindName("HeaderVersionText")).Text == UpdateService.DisplayVersion, "Header version follows release metadata");
             main.Close();
             return 0;
@@ -74,3 +120,4 @@ internal static class Program
         catch (Exception error) { Console.Error.WriteLine(error); return 1; }
     }
 }
+

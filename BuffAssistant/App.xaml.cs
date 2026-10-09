@@ -11,6 +11,12 @@ public partial class App : Application
         base.OnStartup(e);
         _instance = new Mutex(true, "Local\\BlackCardHelper", out var firstInstance);
         if (!firstInstance) { _instance.Dispose(); _instance = null; Shutdown(); return; }
+        if (e.Args.Contains("--background") || new Services.AppSettingsService().Load().StartInBackground)
+        {
+            MainWindow = new MainWindow();
+            MainWindow.Show();
+            return;
+        }
         var splash = new SplashWindow();
         MainWindow = splash;
         splash.Show();
