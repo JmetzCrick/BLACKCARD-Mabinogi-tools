@@ -656,9 +656,26 @@ public partial class MainWindow : Window
         var weekday = ErinWeekday.At(now);
         ErinWeekdayText.Text = weekday.Label;
         ErinWeekdayText.ToolTip = weekday.Description;
+        var ticker = weekday.Label + "   ·   " + weekday.Description.Split('\n', 2)[1].Replace("\n", "   ·   ");
+        if (WeekdayTickerText.Text != ticker)
+        {
+            WeekdayTickerText.Text = ticker;
+            RestartWeekdayTicker();
+        }
         ErinPeriodText.Text = minute < 720 ? "AM" : "PM";
         var hour = minute / 60 % 12;
         ErinDigitalText.Text = $"{(hour == 0 ? 12 : hour):00} : {minute % 60:00}";
+    }
+    private void WeekdayTicker_SizeChanged(object sender, SizeChangedEventArgs e) => RestartWeekdayTicker();
+    private void RestartWeekdayTicker()
+    {
+        if (WeekdayTickerText is null || WeekdayTickerViewport is null || WeekdayTickerViewport.ActualWidth <= 0) return;
+        WeekdayTickerText.Measure(new Size(double.PositiveInfinity, 13));
+        var distance = WeekdayTickerViewport.ActualWidth + WeekdayTickerText.DesiredSize.Width + 24;
+        WeekdayTickerTransform.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty,
+            new System.Windows.Media.Animation.DoubleAnimation(WeekdayTickerViewport.ActualWidth,
+                -WeekdayTickerText.DesiredSize.Width - 24, TimeSpan.FromSeconds(distance / 24))
+            { RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever });
     }
     private void InitializeTray()
     {
