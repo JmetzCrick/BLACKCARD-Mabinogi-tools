@@ -72,6 +72,7 @@ internal static class Program
                 foreach (var keywords in new[] { false, true }) Check(auction.SearchAsync("롱 소드", keywords, null, CancellationToken.None).GetAwaiter().GetResult().Items.Count > 0, "Encrypted shared key retrieves live auction listings");
                 return 0;
             }
+            AudioVolumeTests.Run(Check);
             CalculatorTests.Run(Check);
             GatheringTests.Run(Check);
             var bundleFolder = Path.Combine(AppContext.BaseDirectory,"Assets","Music");

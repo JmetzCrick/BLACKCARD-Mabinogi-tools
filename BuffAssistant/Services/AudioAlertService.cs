@@ -7,13 +7,16 @@ namespace BuffAssistant.Services;
 public sealed class AudioAlertService : System.IDisposable
 {
     private readonly object _lock = new();
-    private WaveOutEvent? _output;
+    private IWavePlayer? _output;
+    private readonly System.Func<IWavePlayer> _createOutput;
+    public AudioAlertService(System.Func<IWavePlayer>? createOutput = null) => _createOutput = createOutput ?? (() => new WaveOutEvent());
     private AudioFileReader? _reader;
     public event System.EventHandler? PlaybackFinished;
 
     public bool IsPlaying { get { lock (_lock) return _output?.PlaybackState == PlaybackState.Playing; } }
-    public float Volume { get { lock (_lock) return _output?.Volume ?? 0; } }
-    public void SetVolume(float volume) { lock (_lock) { if (_output is not null) _output.Volume = System.Math.Clamp(volume, 0, 1); } }
+    private static float Gain(float volume) => float.IsFinite(volume) ? System.Math.Clamp(volume, 0, 1) : 0;
+    public float Volume { get { lock (_lock) return _reader?.Volume ?? 0; } }
+    public void SetVolume(float volume) { lock (_lock) { if (_reader is not null) _reader.Volume = Gain(volume); } }
 
     public void Play(string filePath, float volume = 1f)
     {
@@ -22,12 +25,15 @@ public sealed class AudioAlertService : System.IDisposable
         {
             if (_output?.PlaybackState == PlaybackState.Playing) return;
             StopInternal();
-            _reader = new AudioFileReader(filePath);
-            _output = new WaveOutEvent();
-            _output.Init(_reader);
-            _output.Volume = System.Math.Clamp(volume, 0f, 1f);
-            _output.PlaybackStopped += Output_PlaybackStopped;
-            _output.Play();
+            try
+            {
+                _reader = new AudioFileReader(filePath) { Volume = Gain(volume) };
+                _output = _createOutput();
+                _output.Init(_reader);
+                _output.PlaybackStopped += Output_PlaybackStopped;
+                _output.Play();
+            }
+            catch { StopInternal(); throw; }
         }
     }
 

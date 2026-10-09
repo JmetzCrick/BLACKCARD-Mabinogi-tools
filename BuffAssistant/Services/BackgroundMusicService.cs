@@ -9,7 +9,9 @@ namespace BuffAssistant.Services;
 public sealed class BackgroundMusicService : IDisposable
 {
     private readonly object _sync = new();
-    private WaveOutEvent? _output;
+    private IWavePlayer? _output;
+    private readonly Func<IWavePlayer> _createOutput;
+    public BackgroundMusicService(Func<IWavePlayer>? createOutput = null) => _createOutput = createOutput ?? (() => new WaveOutEvent());
     private AudioFileReader? _reader;
     private List<string> _playlist = new();
     private int _nextIndex;
@@ -20,6 +22,7 @@ public sealed class BackgroundMusicService : IDisposable
     private bool _alertActive;
     public bool IsPlaybackRequested { get { lock (_sync) return _requestedPlaying; } }
     public bool IsMuted { get { lock (_sync) return _muted; } }
+    public float Volume { get { lock (_sync) return _reader?.Volume ?? 0; } }
     public bool Repeat { get; set; } = true;
     public bool IsPlaying { get { lock (_sync) return _output?.PlaybackState == PlaybackState.Playing; } }
     public bool IsPaused { get { lock (_sync) return _output?.PlaybackState == PlaybackState.Paused; } }
@@ -34,27 +37,29 @@ public sealed class BackgroundMusicService : IDisposable
             if (valid.Count == 0) throw new FileNotFoundException("재생할 음악 파일이 없습니다.");
             DisposeCurrent();
             _playlist = valid;
-            _volumePercent = volumePercent;
+            _volumePercent = double.IsFinite(volumePercent) ? Math.Clamp(volumePercent, 0, 100) : 0;
             _requestedPlaying = true;
             _nextIndex = Math.Max(0, valid.FindIndex(p => p.Equals(startFile, StringComparison.OrdinalIgnoreCase)));
             StartNext();
         }
     }
     public void Pause() { lock (_sync) { _requestedPlaying = false; _output?.Pause(); } }
-    public void Resume() { lock (_sync) { _requestedPlaying = true; if (!_alertActive) _output?.Play(); } }
+    public void Resume() { lock (_sync) { _requestedPlaying = true; ApplyVolume(); if (!_alertActive) _output?.Play(); } }
     public void SetAlertActive(bool active)
     {
         lock (_sync)
         {
             if (_disposed) return;
             _alertActive = active;
+            ApplyVolume();
             if (active || !_requestedPlaying) _output?.Pause();
             else _output?.Play();
         }
     }
-    public void SetVolumePercent(double percent) { lock (_sync) { _volumePercent = Math.Clamp(percent, 0, 100); ApplyVolume(); } }
+    public void SetVolumePercent(double percent) { lock (_sync) { _volumePercent = double.IsFinite(percent) ? Math.Clamp(percent, 0, 100) : 0; ApplyVolume(); } }
     public void SetMuted(bool muted) { lock (_sync) { _muted = muted; ApplyVolume(); } }
-    private void ApplyVolume() { if (_output is not null) _output.Volume = _muted ? 0 : (float)Math.Clamp(_volumePercent / 100, 0, 1); }
+    // WaveOut.Volume changes Windows' shared application/device volume. Scale only this stream.
+    private void ApplyVolume() { if (_reader is not null) _reader.Volume = _muted ? 0 : (float)(_volumePercent / 100); }
     private void StartNext()
     {
         DisposeCurrent();
@@ -67,7 +72,8 @@ public sealed class BackgroundMusicService : IDisposable
         try
         {
             _reader = new AudioFileReader(CurrentFile);
-            _output = new WaveOutEvent();
+            ApplyVolume(); // Set gain before initialization queues the first audio buffer.
+            _output = _createOutput();
             _output.Init(_reader);
             ApplyVolume();
             _output.PlaybackStopped += Output_PlaybackStopped;
