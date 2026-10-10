@@ -8,11 +8,21 @@ public static class ErinClock
 {
     public const long DayMilliseconds = 2_160_000;
     public const long OffsetMilliseconds = 24_000;
-    public static long OfficialSecond(DateTimeOffset time) => (long)Math.Floor((time.ToUnixTimeMilliseconds() - OffsetMilliseconds) / 1000.0 + 0.5);
+    public static long CorrectionMilliseconds { get; set; }
+    public static long OfficialSecond(DateTimeOffset time) => (long)Math.Floor((time.ToUnixTimeMilliseconds() + CorrectionMilliseconds - OffsetMilliseconds) / 1000.0 + 0.5);
+    public static void Align(DateTimeOffset now, int hour, int minute)
+    {
+        if (hour is < 0 or > 23 || minute is < 0 or > 59) throw new ArgumentOutOfRangeException();
+        var phase = PositiveRemainder(now.ToUnixTimeMilliseconds() + CorrectionMilliseconds - OffsetMilliseconds + 500, DayMilliseconds);
+        var difference = hour * 90_000L + minute * 1500L - phase;
+        if (difference > DayMilliseconds / 2) difference -= DayMilliseconds;
+        if (difference < -DayMilliseconds / 2) difference += DayMilliseconds;
+        CorrectionMilliseconds += difference;
+    }
     public static int Minute(DateTimeOffset time) => (int)(PositiveRemainder(OfficialSecond(time), 2160) / 1.5);
     public static string Display(DateTimeOffset time) { var minute = Minute(time); return $"{minute / 60:00}:{minute % 60:00}"; }
     public static long PositiveRemainder(long value, long modulus) => (value % modulus + modulus) % modulus;
-    public static DateTimeOffset Boundary(long day, int hour) => DateTimeOffset.FromUnixTimeMilliseconds(day * DayMilliseconds + hour * 90_000 + OffsetMilliseconds - 500);
+    public static DateTimeOffset Boundary(long day, int hour) => DateTimeOffset.FromUnixTimeMilliseconds(day * DayMilliseconds + hour * 90_000 + OffsetMilliseconds - 500 - CorrectionMilliseconds);
     public static TimeSpan Until(DateTimeOffset now, int hour)
     {
         var day = (long)Math.Floor(OfficialSecond(now) / 2160.0);

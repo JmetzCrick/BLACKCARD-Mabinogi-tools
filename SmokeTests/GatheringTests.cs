@@ -8,6 +8,7 @@ internal static class GatheringTests
     public static void Run(Action<bool, string> check)
     {
         const long day = 20000;
+        ErinClock.CorrectionMilliseconds = 0;
         check(BundledAuctionKey.Read().Length > 20 && typeof(BundledAuctionKey).Assembly.GetManifestResourceNames().Contains("BlackCardHelper.AuctionKey"), "Auction credential is embedded and requires no external key file or account");
         check(GatheringSchedule.Items.Count == 19, "All 19 supplied gathering schedules are present");
         var settings = new BuffAssistant.Models.AppSettings { GatheringAlarmsEnabled = true, GatheringAlarmItems = new() { "월광 당근" }, GatheringVolumePercent = 35 };
@@ -48,5 +49,11 @@ internal static class GatheringTests
         var thirteen = ErinClock.Boundary(day,13);
         tracker.Reset(thirteen.AddMilliseconds(-250));
         check(tracker.Tick(thirteen, true, new HashSet<string> { "아벤츄린", "신비한 깃털" }).Count == 2, "Simultaneous gathering starts are batched into one sound notification");
+        var sample = ErinClock.Boundary(day,2).AddSeconds(73.5);
+        ErinClock.Align(sample,23,10);
+        check(ErinClock.Display(sample)=="23:10", "In-game 23:10 alignment corrects 02:49 across midnight");
+        var midnight = ErinClock.Boundary((long)Math.Floor(ErinClock.OfficialSecond(sample)/2160.0)+1,0);
+        check(ErinClock.Display(midnight)=="00:00" && ErinClock.Until(sample,0)==midnight-sample, "Corrected gathering boundary and countdown share clock phase");
+        ErinClock.CorrectionMilliseconds=0;
     }
 }

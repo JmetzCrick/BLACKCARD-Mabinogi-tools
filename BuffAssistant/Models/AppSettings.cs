@@ -2,6 +2,7 @@ namespace BuffAssistant.Models;
 
 public sealed class AppSettings
 {
+    public long ErinClockCorrectionMilliseconds { get; set; }
     public List<string> MusicFiles { get; set; } = new();
     public bool MusicEnabled { get; set; } = true;
     public bool MusicPlaybackStateSaved { get; set; }

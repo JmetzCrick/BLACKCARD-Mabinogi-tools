@@ -9,6 +9,7 @@ namespace BuffAssistant;
 
 public sealed class GatheringPanel : UserControl, IDisposable
 {
+    public void ResetClock() { _tracker.Reset(GameClockSync.Now); Refresh(); }
     private readonly TextBlock _clock = new() { FontSize = 32, Foreground = Brushes.White };
     private readonly TextBlock _summary = new() { FontSize = 10, Foreground = Brushes.LightSteelBlue, TextWrapping = TextWrapping.Wrap };
     private readonly TextBlock _notice = new() { FontSize = 11, Foreground = Brushes.LightGreen, TextWrapping = TextWrapping.Wrap };
@@ -86,7 +87,7 @@ public sealed class GatheringPanel : UserControl, IDisposable
         _master.Checked += Changed; _master.Unchecked += Changed;
         _volume.ValueChanged += (_, _) => { _volumeLabel.Text = $"{_volume.Value:0}%"; _sound.SetVolume((float)_volume.Value / 100); if (!_loading) SettingsChanged?.Invoke(); };
         _volumeLabel.Text = "50%";
-        _tracker.Reset(DateTimeOffset.UtcNow);
+        _tracker.Reset(GameClockSync.Now);
         _timer.Tick += (_, _) => Refresh(); _timer.Start(); Refresh();
     }
 
@@ -98,17 +99,17 @@ public sealed class GatheringPanel : UserControl, IDisposable
         foreach (var pair in _checks) pair.Value.IsChecked = selected.Contains(pair.Key);
         _volume.Value = Math.Clamp(volume, 0, 100);
         _loading = false;
-        _tracker.Reset(DateTimeOffset.UtcNow); Refresh();
+        _tracker.Reset(GameClockSync.Now); Refresh();
     }
     private void Changed(object sender, RoutedEventArgs args)
     {
-        _tracker.Reset(DateTimeOffset.UtcNow);
+        _tracker.Reset(GameClockSync.Now);
         if (!AlarmsEnabled) _sound.Dispose();
         Refresh(); if (!_loading) SettingsChanged?.Invoke();
     }
     public void Refresh()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = GameClockSync.Now;
         _clock.Text = ErinClock.Display(now);
         var next = GatheringSchedule.Items.OrderBy(x => ErinClock.Until(now, x.StartHour)).First();
         _summary.Text = $"지금 {GatheringSchedule.Items.Count(x => x.Available(now))}종 채집 가능 · 다음 {next.Name} {Countdown(ErinClock.Until(now, next.StartHour))} 후";

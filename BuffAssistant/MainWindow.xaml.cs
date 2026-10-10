@@ -88,6 +88,7 @@ public partial class MainWindow : Window
         }
 
         LoadSettings(autoPlayMusic);
+        if (autoPlayMusic) Loaded += async (_, _) => await SyncClockAsync();
         if (autoPlayMusic)
         {
             InitializeTray();
@@ -123,6 +124,7 @@ public partial class MainWindow : Window
         try
         {
             var settings = _settings.Load();
+            ErinClock.CorrectionMilliseconds = Math.Clamp(settings.ErinClockCorrectionMilliseconds, -ErinClock.DayMilliseconds, ErinClock.DayMilliseconds);
             StartBackgroundCheck.IsChecked = settings.StartInBackground;
             CloseToTrayCheck.IsChecked = settings.CloseToTray;
             AlwaysTopCheck.IsChecked = settings.AlwaysOnTop;
@@ -167,6 +169,7 @@ public partial class MainWindow : Window
     {
         _settings.Save(new AppSettings
         {
+            ErinClockCorrectionMilliseconds = ErinClock.CorrectionMilliseconds,
             MusicFiles = _musicFiles.Select(x => x.Path).Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
             MusicEnabled = _musicEnabled,
             MusicPlaybackStateSaved = true,
@@ -537,7 +540,7 @@ public partial class MainWindow : Window
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
     private void UpdateErinClock()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = GameClockSync.Now;
         var minute = ErinClock.Minute(now);
         var weekday = ErinWeekday.At(now);
         ErinWeekdayText.Text = weekday.Label;
@@ -562,6 +565,30 @@ public partial class MainWindow : Window
             new System.Windows.Media.Animation.DoubleAnimation(WeekdayTickerViewport.ActualWidth,
                 -WeekdayTickerText.DesiredSize.Width - 24, TimeSpan.FromSeconds(distance / 24))
             { RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever });
+    }
+    private async Task SyncClockAsync()
+    {
+        try
+        {
+            await GameClockSync.SynchronizeAsync();
+            if (_closed) return;
+            _gathering.ResetClock();
+            UpdateErinClock();
+            ClockSyncStatus.Text = "서버 시각 동기화 완료 · 채널 차이는 인게임 시각으로 맞춰 주세요.";
+        }
+        catch { if (!_closed) ClockSyncStatus.Text = "서버 연결 실패 · PC 시각 및 저장된 보정값을 사용합니다."; }
+    }
+    private async void SyncClock_Click(object sender, RoutedEventArgs e) => await SyncClockAsync();
+    private void AlignGameClock_Click(object sender, RoutedEventArgs e)
+    {
+        if (!DateTime.TryParseExact(GameClockInput.Text.Trim(), "HH:mm", System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None, out var time))
+        { ClockSyncStatus.Text = "현재 게임 시각을 HH:mm으로 입력하세요. 예: 23:10"; return; }
+        ErinClock.Align(GameClockSync.Now, time.Hour, time.Minute);
+        _gathering.ResetClock();
+        UpdateErinClock();
+        SaveSettings();
+        ClockSyncStatus.Text = "만돌린 7채널 기준으로 보정 저장 완료 · 채집 타이머·알람에도 적용됩니다.";
     }
     private void InitializeTray()
     {

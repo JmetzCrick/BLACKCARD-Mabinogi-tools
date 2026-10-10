@@ -22,6 +22,14 @@ internal static class Program
     {
         try
         {
+            if (args.Length > 0 && args[0] == "--clock-sync-test")
+            {
+                GameClockSync.SynchronizeAsync().GetAwaiter().GetResult();
+                var start = GameClockSync.Now;
+                Thread.Sleep(100);
+                Check(GameClockSync.Now > start, "Official HTTPS time anchor advances independently of system clock changes");
+                return 0;
+            }
             if(args.Length > 0 && args[0] == "--music-files-test")
             {
                 foreach(var file in MusicCatalog.StartupPlaylist(Array.Empty<string>(),Path.Combine(AppContext.BaseDirectory,"Assets","Music")))
