@@ -20,7 +20,7 @@ public partial class MainWindow : Window
     private readonly BackgroundMusicService _backgroundMusic = new();
     private readonly AppSettingsService _settings = new();
     private GatheringPanel _gathering = null!;
-    private readonly System.Windows.Threading.DispatcherTimer _gatheringToastTimer = new() { Interval = TimeSpan.FromSeconds(10) };
+    private GatheringAnnouncementWindow? _gatheringAnnouncement;
     private readonly AuctionService _auction = new();
     private readonly IAuctionDataSource _auctionSearchSource;
     private readonly AuctionInsightsService _auctionInsights;
@@ -63,9 +63,8 @@ public partial class MainWindow : Window
         InitializeComponent();
         _gathering = new GatheringPanel();
         GatheringHost.Child = _gathering;
-        _gathering.SettingsChanged += () => { if (!_loadingSettings) SaveSettings(); };
-        _gathering.AlarmRaised += message => { GatheringToastText.Text = message; GatheringToast.Visibility = Visibility.Visible; _gatheringToastTimer.Stop(); _gatheringToastTimer.Start(); };
-        _gatheringToastTimer.Tick += (_, _) => { GatheringToast.Visibility = Visibility.Collapsed; _gatheringToastTimer.Stop(); };
+        _gathering.SettingsChanged += () => { if (!_gathering.AlarmsEnabled) _gatheringAnnouncement?.Dismiss(); if (!_loadingSettings) SaveSettings(); };
+        _gathering.AlarmRaised += message => { (_gatheringAnnouncement ??= new GatheringAnnouncementWindow()).Present(message); };
         HeaderVersionText.Text = UpdateService.DisplayVersion;
         CurrentVersionText.Text = "현재 버전  " + UpdateService.DisplayVersion;
         AddHandler(System.Windows.Input.Mouse.PreviewMouseDownEvent, new System.Windows.Input.MouseButtonEventHandler(ShowClickRipple), true);
@@ -107,7 +106,7 @@ public partial class MainWindow : Window
             _closed = true;
             _tray?.Dispose();
             _gathering.Dispose();
-            _gatheringToastTimer.Stop();
+            _gatheringAnnouncement?.Close();
             ClickEffectsCanvas.Children.Clear();
             _auctionLifetime.Cancel();
             _insightsCts?.Cancel();

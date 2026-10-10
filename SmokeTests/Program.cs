@@ -22,6 +22,29 @@ internal static class Program
     {
         try
         {
+            if (args.Length > 0 && args[0] == "--gathering-overlay-test")
+            {
+                var overlayApp = new App(); overlayApp.InitializeComponent();
+                var hiddenMain = new MainWindow(autoPlayMusic:false);
+                hiddenMain.Show(); hiddenMain.Hide();
+                var gathering = (GatheringPanel)typeof(MainWindow).GetField("_gathering",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(hiddenMain);
+                var alarm = (Action<string>)typeof(GatheringPanel).GetField("AlarmRaised",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(gathering);
+                var message = GatheringAnnouncementWindow.Format(GatheringSchedule.Items.Where(x=>x.StartHour==13));
+                alarm(message);
+                var overlay = (GatheringAnnouncementWindow)typeof(MainWindow).GetField("_gatheringAnnouncement",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(hiddenMain);
+                Check(!hiddenMain.IsVisible && overlay.IsVisible && overlay.Topmost && overlay.Owner==null,"Gathering preview remains topmost independently of hidden main window");
+                Check(!overlay.ShowActivated && !overlay.ShowInTaskbar && !overlay.IsHitTestVisible,"Preview does not activate, capture clicks, or create taskbar entry");
+                Check(overlay.Left==SystemParameters.WorkArea.Left+20 && overlay.Top==SystemParameters.WorkArea.Top+20,"Preview has twenty-pixel top-left working-area margin");
+                var styles=(int)typeof(GatheringAnnouncementWindow).GetMethod("GetWindowLong",BindingFlags.NonPublic|BindingFlags.Static).Invoke(null,new object[]{new System.Windows.Interop.WindowInteropHelper(overlay).Handle,-20});
+                Check((styles & 0x080000A0)==0x080000A0,"Native no-activation and click-through window styles are applied");
+                Check(message.Contains("아벤츄린 · 13:00 등장") && message.Contains("신비한 깃털 · 13:00 등장") && message.Contains("30분 후"),"Batched preview includes item names, exact Erin appearance times, and lead time");
+                var content = (FrameworkElement)overlay.Content; content.UpdateLayout();
+                var overlayBitmap = new RenderTargetBitmap((int)Math.Ceiling(content.ActualWidth),(int)Math.Ceiling(content.ActualHeight),96,96,PixelFormats.Pbgra32); overlayBitmap.Render(content);
+                var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(overlayBitmap));using(var file=File.Create("gathering-announcement-preview.png"))png.Save(file);
+                overlay.Dismiss(); Check(!overlay.IsVisible,"Dismiss hides the preview without shutting down main services");
+                hiddenMain.Close();
+                return 0;
+            }
             if (args.Length > 0 && args[0] == "--clock-sync-test")
             {
                 GameClockSync.SynchronizeAsync().GetAwaiter().GetResult();

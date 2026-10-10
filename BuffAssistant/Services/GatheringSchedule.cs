@@ -66,6 +66,7 @@ public static class GatheringSchedule
 /// <summary>Only start crossings can alert. Launch, toggle, backward clock changes and sleep never replay old starts.</summary>
 public sealed class GatheringAlarmTracker
 {
+    public const long LeadMilliseconds = 45_000; // 30 Erin minutes, not 30 real minutes.
     private DateTimeOffset? _previous;
     private readonly Dictionary<string, long> _lastDay = new();
     public void Reset(DateTimeOffset now) => _previous = now;
@@ -78,9 +79,13 @@ public sealed class GatheringAlarmTracker
         var alarms = new List<GatheringItem>();
         foreach (var item in GatheringSchedule.Items.Where(x => selected.Contains(x.Name)))
         {
-            var start = ErinClock.Boundary(day, item.StartHour);
-            if (start > previous && start <= now && (!_lastDay.TryGetValue(item.Name, out var last) || day > last))
-            { _lastDay[item.Name] = day; alarms.Add(item); }
+            // Midnight's preview belongs to the NEXT Erin day's start.
+            foreach (var startDay in new[] { day, day + 1 })
+            {
+                var preview = ErinClock.Boundary(startDay, item.StartHour).AddMilliseconds(-LeadMilliseconds);
+                if (preview > previous && preview <= now && (!_lastDay.TryGetValue(item.Name, out var last) || startDay > last))
+                { _lastDay[item.Name] = startDay; alarms.Add(item); }
+            }
         }
         return alarms;
     }

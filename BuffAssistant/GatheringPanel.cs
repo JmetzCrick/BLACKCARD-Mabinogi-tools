@@ -43,6 +43,7 @@ public sealed class GatheringPanel : UserControl, IDisposable
         clockBox.Children.Add(_clock); header.Children.Add(clockBox);
         var controls = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
         controls.Children.Add(_master);
+        _master.ToolTip = "선택한 품목 등장 30 에린분 전 · 현실 약 45초 전 · 도우미를 내려도 화면 왼쪽 위에 예고";
         var volumeRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new(0, 8, 0, 0) };
         volumeRow.Children.Add(new TextBlock { Text = "소리", FontSize = 10, VerticalAlignment = VerticalAlignment.Center, Margin = new(0, 0, 5, 0) });
         _volume.Style = (Style)Application.Current.FindResource("SimpleSlider");
@@ -124,7 +125,7 @@ public sealed class GatheringPanel : UserControl, IDisposable
         var alarms = _tracker.Tick(now, AlarmsEnabled, SelectedItems.ToHashSet(StringComparer.Ordinal));
         if (alarms.Count > 0)
         {
-            _notice.Text = "채집 시작 · " + string.Join(", ", alarms.Select(x => x.Name));
+            _notice.Text = GatheringAnnouncementWindow.Format(alarms);
             _noticeUntil = now.AddSeconds(10);
             try { if (_volume.Value > 0) _sound.Play(_soundPath, (float)_volume.Value / 100); }
             catch { _notice.Text += " · 소리 장치를 확인하세요."; }
