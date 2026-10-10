@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<title>������</title>
+	<script type="text/javascript">
+
+		function extractDomain(url) {
+	    var domain;
+	    if (url.indexOf("://") > -1) {
+	       domain = url.split('/')[2];
+	    }
+	    else {
+	       domain = url.split('/')[0];
+	    }
+	    domain = domain.split(':')[0];
+
+	    return domain;
+		}
+
+		if(location.host == "mabinogi.nexon.game.naver.com") {
+			if(extractDomain(document.referrer) != "mabinogi.nexon.game.naver.com") {
+				location.href = "/page/main/index.asp?naver_reload=agree";
+			} else {
+				location.href = "/page/main/index.asp";
+			}
+	  } else if(location.host == "m.mabinogi.nexon.com") {
+			location.href = "/m/main/index.asp";
+		} else {
+	    location.href = "/page/main/index.asp";
+	  }
+
+	</script>
+</head>
+<body>
+
+</body>
+
+</html>
+
